@@ -176,7 +176,6 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der gesichtete Zuckerhügel</param>
         public override void Sieht(Zucker zucker)
         {
-            SprüheMarkierung(0, 100);
             if(AktuelleLast == 0)
             {
                 GeheZuZiel(zucker);
@@ -192,8 +191,13 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="obst">Das erreichte Stück Obst</param>
         public override void ZielErreicht(Obst obst)
         {
+            //Nur wenn noch Träger gebraucht werden
+            if (BrauchtNochTräger(obst) == true)
+            {
+            SprüheMarkierung(1000, 300);
             Nimm(obst);
             GeheZuBau();
+            }
         }
 
         /// <summary>
@@ -222,6 +226,22 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="markierung">Die gerochene Markierung</param>
         public override void RiechtFreund(Markierung markierung)
         {
+            //Gehe in Richtung Zuckerberg
+            if(markierung.Information <1000 )
+            {
+                if (Ziel == null)
+                {
+                    //Drehe Richtung Zuckerberg
+                    DreheInRichtung(markierung.Information);
+                    GeheGeradeaus();
+                }
+            }
+
+            //Gehe zu Apfel um zu helfen
+            if (markierung.Information == 1000 && AktuelleLast == 0)
+            {
+                GeheZuZiel(markierung);
+            }
         }
 
         /// <summary>
@@ -270,6 +290,12 @@ namespace AntMe.Player.AntMeTeam1
         public override void SiehtFeind(Wanze wanze)
         {
             Denke("Hilfe");
+            
+            if (AktuelleLast == 0)
+            {
+                GeheWegVon(wanze);
+            }
+            
         }
 
         /// <summary>
@@ -292,7 +318,6 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Angreifende Wanze</param>
         public override void WirdAngegriffen(Wanze wanze)
         {
-            GeheWegVon(wanze);
         }
 
         #endregion
