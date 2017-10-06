@@ -35,6 +35,52 @@ namespace AntMe.Player.AntMeTeam1
         ReichweiteModifikator = 0,          // Ausdauer einer Ameise
         SichtweiteModifikator = 0           // Sichtweite einer Ameise
     )]
+
+    [Kaste(
+        Name = "Sammler",                  // Name der Berufsgruppe
+        AngriffModifikator = -1,             // Angriffsstärke einer Ameise
+        DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
+        EnergieModifikator = -1,             // Lebensenergie einer Ameise
+        GeschwindigkeitModifikator = 2,     // Laufgeschwindigkeit einer Ameise
+        LastModifikator = 2,                // Tragkraft einer Ameise
+        ReichweiteModifikator = 0,          // Ausdauer einer Ameise
+        SichtweiteModifikator = -1           // Sichtweite einer Ameise
+    )]
+
+    [Kaste(
+        Name = "Sucher",                  // Name der Berufsgruppe
+        AngriffModifikator = -1,             // Angriffsstärke einer Ameise
+        DrehgeschwindigkeitModifikator = 0, // Drehgeschwindigkeit einer Ameise
+        EnergieModifikator = -1,             // Lebensenergie einer Ameise
+        GeschwindigkeitModifikator = 2,     // Laufgeschwindigkeit einer Ameise
+        LastModifikator = -1,                // Tragkraft einer Ameise
+        ReichweiteModifikator = -1,          // Ausdauer einer Ameise
+        SichtweiteModifikator = 2           // Sichtweite einer Ameise
+    )]
+
+    [Kaste(
+        Name = "Spotter",                  // Name der Berufsgruppe
+        AngriffModifikator = 0,             // Angriffsstärke einer Ameise
+        DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
+        EnergieModifikator = 1,             // Lebensenergie einer Ameise
+        GeschwindigkeitModifikator = 0,     // Laufgeschwindigkeit einer Ameise
+        LastModifikator = -1,                // Tragkraft einer Ameise
+        ReichweiteModifikator = -1,          // Ausdauer einer Ameise
+        SichtweiteModifikator = 2           // Sichtweite einer Ameise
+    )]
+
+    [Kaste(
+        Name = "Fighter",                  // Name der Berufsgruppe
+        AngriffModifikator = 2,             // Angriffsstärke einer Ameise
+        DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
+        EnergieModifikator = 2,             // Lebensenergie einer Ameise
+        GeschwindigkeitModifikator = -1,     // Laufgeschwindigkeit einer Ameise
+        LastModifikator = -1,                // Tragkraft einer Ameise
+        ReichweiteModifikator = 0,          // Ausdauer einer Ameise
+        SichtweiteModifikator = -1           // Sichtweite einer Ameise
+    )]
+
+
     public class AntMeTeam1Klasse : Basisameise
     {
         #region Kasten
@@ -64,6 +110,7 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Wartet()
         {
+            GeheGeradeaus();
         }
 
         /// <summary>
@@ -72,6 +119,7 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void WirdMüde()
         {
+            GeheZuBau();
         }
 
         /// <summary>
@@ -93,6 +141,13 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Tick()
         {
+            if(AktuelleLast > 0)
+            {
+                if (GetragenesObst == null)
+                {
+                    SprüheMarkierung(Richtung + 180, 100);
+                }
+            }
         }
 
         #endregion
@@ -107,6 +162,10 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="obst">Das gesichtete Stück Obst</param>
         public override void Sieht(Obst obst)
         {
+            if (AktuelleLast == 0)
+            {
+                GeheZuZiel(obst);
+            }
         }
 
         /// <summary>
@@ -117,6 +176,11 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der gesichtete Zuckerhügel</param>
         public override void Sieht(Zucker zucker)
         {
+            SprüheMarkierung(0, 100);
+            if(AktuelleLast == 0)
+            {
+                GeheZuZiel(zucker);
+            }
         }
 
         /// <summary>
@@ -128,6 +192,8 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="obst">Das erreichte Stück Obst</param>
         public override void ZielErreicht(Obst obst)
         {
+            Nimm(obst);
+            GeheZuBau();
         }
 
         /// <summary>
@@ -139,6 +205,8 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der erreichte Zuckerhügel</param>
         public override void ZielErreicht(Zucker zucker)
         {
+            Nimm(zucker);
+            GeheZuBau();
         }
 
         #endregion
@@ -201,6 +269,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Erspähte Wanze</param>
         public override void SiehtFeind(Wanze wanze)
         {
+            Denke("Hilfe");
         }
 
         /// <summary>
@@ -223,6 +292,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Angreifende Wanze</param>
         public override void WirdAngegriffen(Wanze wanze)
         {
+            GeheWegVon(wanze);
         }
 
         #endregion
