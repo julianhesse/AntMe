@@ -119,7 +119,7 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void WirdMüde()
         {
-            GeheZuBau();
+            //GeheZuBau();
         }
 
         /// <summary>
@@ -141,6 +141,13 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Tick()
         {
+            //Schickt erschöpfte Ameisen zurück
+            if (Reichweite - ZurückgelegteStrecke -20 < EntfernungZuBau)
+            {
+                GeheZuBau();
+            }
+
+            //Ermöglicht anderen Ameisen zu wissen, wo Zucker ist
             if(AktuelleLast > 0)
             {
                 if (GetragenesObst == null)
