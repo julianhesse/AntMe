@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AntMe.Spieler;
 
 namespace AntMe.Player.AntMeTeam1
 {
@@ -101,6 +102,8 @@ namespace AntMe.Player.AntMeTeam1
 
         #endregion
 
+        private bool registered = false;
+
         #region Fortbewegung
 
         /// <summary>
@@ -110,7 +113,21 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Wartet()
         {
+            if (!registered)
+            {
+                TicketManager._instance.RegisterAmeise(this);
+                registered = false;
+            }
+
+            TicketManager._instance.GetTicket();
+            if (Ticket == null)
+            {
+                DreheUmWinkel((new Random).Next(0, 360));
+                GeheGeradeaus(100);
+            }
             GeheGeradeaus();
+
+            base.Wartet();
         }
 
         /// <summary>
@@ -131,6 +148,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="todesart">Art des Todes</param>
         public override void IstGestorben(Todesart todesart)
         {
+            TicketManager._instance.UnregisterAmeise(this);
         }
 
         /// <summary>
@@ -141,6 +159,7 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Tick()
         {
+            base.Tick();
             //Schickt erschöpfte Ameisen zurück
             if (Reichweite - ZurückgelegteStrecke -20 < EntfernungZuBau)
             {
@@ -183,6 +202,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der gesichtete Zuckerhügel</param>
         public override void Sieht(Zucker zucker)
         {
+            TicketManager._instance.ReportSugar(zucker);
             if(AktuelleLast == 0)
             {
                 GeheZuZiel(zucker);
