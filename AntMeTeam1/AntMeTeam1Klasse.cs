@@ -125,6 +125,10 @@ namespace AntMe.Player.AntMeTeam1
                 DreheUmWinkel((new Random).Next(0, 360));
                 GeheGeradeaus(100);
             }
+            else
+            {
+                //GeheZuZiel
+            }
             GeheGeradeaus();
 
             base.Wartet();
