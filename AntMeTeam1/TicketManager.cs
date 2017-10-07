@@ -26,10 +26,19 @@ namespace AntMe.Spieler
 
         #endregion
 
-        private List<Zucker> zuckers = new List<Zucker>();
-        private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>();
+        private List<Zucker> zuckers = new List<Zucker>();                     //Liste mit allen Zuckerbergen 
+        private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
+        private List<Obst> obsts = new List<Obst>();                           //Liste mit allem Obst 
+        private List<Wanze> wanzes = new List<Wanze>();                        //Liste mit allen Wanzen 
+        private List<Ameise> fameisen = new List<Ameise>();                    //feindliche Ameisen
 
-        private Queue<Ticket> tickets = new Queue<Ticket>();
+        private Queue<Ticket> zTickets = new Queue<Ticket>();                   //Liste mit allen Zuckertickets
+        private Queue<Ticket> oTickets = new Queue<Ticket>();                   //Liste mit allen Obsttickets
+        private Queue<Ticket> wTickets = new Queue<Ticket>();                   //Liste mit allen Wanzen
+        private Queue<Ticket> fTickets = new Queue<Ticket>();                   //Liste mit allen feindlichen Ameisen
+
+
+        #region Report
 
         internal void ReportSugar(Zucker zucker)
         {
@@ -39,10 +48,36 @@ namespace AntMe.Spieler
                 int mengeTickets = zucker.Menge / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    tickets.Enqueue(new Ticket() { Zucker = zucker });
+                    zTickets.Enqueue(new Ticket() { Zucker = zucker });
                 }
             }
         }
+        internal void ReportObst(Obst obst)
+        {
+            if (!obsts.Contains(obst))
+            {
+
+            }
+        }
+
+        internal void ReportWanze(Wanze wanze)
+        {
+            if (!wanzes.Contains(wanze))
+            {
+
+            }
+        }
+
+        internal void ReportAmeise(Ameise ameise)
+        {
+            if (!fameisen.Contains(ameise))
+            {
+
+            }
+        }
+
+        #endregion Report
+
 
         internal void RegisterAmeise(AntMeTeam1Klasse ameise)
         {
@@ -59,9 +94,9 @@ namespace AntMe.Spieler
 
         internal Ticket GetTicket()
         {
-            if (tickets.Count > 0)
+            if (zTickets.Count > 0)
             {
-                return tickets.Dequeue();
+                return zTickets.Dequeue();
             }
             return null;
         }
