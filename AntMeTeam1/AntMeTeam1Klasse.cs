@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AntMe.Spieler;
 
 namespace AntMe.Player.AntMeTeam1
 {
@@ -27,11 +28,11 @@ namespace AntMe.Player.AntMeTeam1
     /// Lektion zur Spezialisierung von Ameisen entnehmen (http://wiki.antme.net/de/Lektion7).
     [Kaste(
         Name = "Standard",                  // Name der Berufsgruppe
-        AngriffModifikator = -1,             // Angriffsstärke einer Ameise
-        DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
-        EnergieModifikator = -1,             // Lebensenergie einer Ameise
-        GeschwindigkeitModifikator = 1,     // Laufgeschwindigkeit einer Ameise
-        LastModifikator = 2,                // Tragkraft einer Ameise
+        AngriffModifikator = 0,             // Angriffsstärke einer Ameise
+        DrehgeschwindigkeitModifikator = 0, // Drehgeschwindigkeit einer Ameise
+        EnergieModifikator = 0,             // Lebensenergie einer Ameise
+        GeschwindigkeitModifikator = 0,     // Laufgeschwindigkeit einer Ameise
+        LastModifikator = 0,                // Tragkraft einer Ameise
         ReichweiteModifikator = 0,          // Ausdauer einer Ameise
         SichtweiteModifikator = 0           // Sichtweite einer Ameise
     )]
@@ -96,23 +97,33 @@ namespace AntMe.Player.AntMeTeam1
         public override string BestimmeKaste(Dictionary<string, int> anzahl)
         {
             // Gibt den Namen der betroffenen Kaste zurück.
-            /*
-            if( anzahl["Spotter"] < 5)
-            {
-                return "Spotter";
-            }
-            */
-            if (anzahl["Standard"] < 50)
-            {
-                return "Standard";
-            }
-            else
-            {
-                return "Sammler";
-            }
+            return "Standard";
         }
 
         #endregion
+
+        #region Custom
+
+        private bool registered = false;
+        private Bau bau = null;
+        private Spielobjekt ZielOptimized = null;
+        private Zucker zuckers = null;
+
+        private void GeheZuZielOptimized(Spielobjekt spielobjekt)
+        {
+            int distance = Koordinate.BestimmeEntfernung(this, spielobjekt);
+            int angel = Koordinate.BestimmeRichtung(this, spielobjekt);
+            DreheInRichtung(angel);
+            GeheGeradeaus(distance);
+            ZielOptimized = spielobjekt;
+        }
+
+        private void GeheZuBauOptimized(Spielobjekt spielobjekt)
+        {
+            GeheZuZielOptimized(bau);
+        }
+
+        #endregion Custom
 
         #region Fortbewegung
 
@@ -123,7 +134,37 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Wartet()
         {
+            //Baureferenz suchen
+            if (bau == null)
+            {
+                GeheZuBau();
+                bau = Ziel as Bau;
+                BleibStehen();
+            }
+            if (!registered)
+            {
+                TicketManager.Instance.RegisterAmeise(this);
+                registered = false;
+            }
+
+            //Wenn die Ameise nichts zu tun hat, dann geht nimmt sie ein Ticket engegen
+            Ticket ticket = TicketManager.Instance.GetTicket();
+
+
+            //wenn kein Ticket vorhanden, dann gehe über das Feld
+            if (ticket == null)
+            {
+                Random rnd = new Random();
+                DreheUmWinkel(rnd.Next(0, 360));
+                GeheGeradeaus(100);
+            }
+            else
+            {
+                //GeheZuZiel
+            }
             GeheGeradeaus();
+
+            base.Wartet();
         }
 
         /// <summary>
@@ -144,6 +185,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="todesart">Art des Todes</param>
         public override void IstGestorben(Todesart todesart)
         {
+            TicketManager.Instance.UnregisterAmeise(this);
         }
 
         /// <summary>
@@ -154,20 +196,29 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Tick()
         {
-            //Schickt erschöpfte Ameisen zurück
-            /*if (Reichweite - ZurückgelegteStrecke -20 < EntfernungZuBau)
-            {
-                GeheZuBau();
-            }*/
+            base.Tick();
 
+            if (Ziel == null && ZielOptimized != null)
+            {
+                int distance = Koordinate.BestimmeEntfernung(this, ZielOptimized);
+                int angle = Koordinate.BestimmeRichtung(this, ZielOptimized);
+                if (distance < Sichtweite / 2)
+                {
+                    GeheZuZielOptimized(ZielOptimized);
+                    ZielOptimized = null;
+                }
+            }
+
+            /*
             //Ermöglicht anderen Ameisen zu wissen, wo Zucker ist
-            if (AktuelleLast > 0)
+            if(AktuelleLast > 0)
             {
                 if (GetragenesObst == null)
                 {
                     SprüheMarkierung(Richtung + 180, 100);
                 }
             }
+            */
         }
 
         #endregion
@@ -196,6 +247,12 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der gesichtete Zuckerhügel</param>
         public override void Sieht(Zucker zucker)
         {
+            zuckers = zucker;
+            if (Ziel == null && ZielOptimized == null)
+            {
+                GeheZuZiel(zucker);
+            }
+            TicketManager.Instance.ReportSugar(zucker);
             if (AktuelleLast == 0)
             {
                 GeheZuZiel(zucker);
