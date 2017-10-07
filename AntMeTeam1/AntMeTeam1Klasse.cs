@@ -83,6 +83,37 @@ namespace AntMe.Player.AntMeTeam1
 
     public class AntMeTeam1Klasse : Basisameise
     {
+        #region Self-Made
+
+        private Zucker zuckers = null; //Speichert den Zuckerberg, damit die Ameise später den Zucker wiederfindet
+        private Bau bau = null;
+        private Spielobjekt ankunftsort = null;
+
+
+        private void GeheZuZielOptimized(Spielobjekt spielobjekt)
+        {
+            int distance = Koordinate.BestimmeEntfernung(this, spielobjekt);
+            int angle = Koordinate.BestimmeRichtung(this, spielobjekt);
+            DreheInRichtung(angle);
+            GeheGeradeaus(distance);
+        }
+
+        private void GeheZuBauOptimized(Spielobjekt spielobjekt)
+        {
+            if (bau != null)
+            {
+                GeheZuZielOptimized(spielobjekt);
+                Denke("Nach Hause");
+                ankunftsort = spielobjekt;
+            }
+            else
+            {
+                GeheZuBau();
+            }
+        }
+
+        #endregion Self-Made
+
         #region Kasten
 
         /// <summary>
@@ -123,7 +154,24 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Wartet()
         {
-            GeheGeradeaus();
+            //Initialisiere Bau
+            if (bau == null)
+            {
+                GeheZuBau();
+                bau = Ziel as Bau;
+                BleibStehen();
+            }
+
+
+            //Falls es noch einen Zuckerberg gibt, dann gehe zum Zuckerberg
+            if (zuckers != null)
+            {
+                GeheZuZielOptimized(zuckers);
+            }
+            else
+            {
+                GeheGeradeaus();
+            }
         }
 
         /// <summary>
@@ -135,7 +183,7 @@ namespace AntMe.Player.AntMeTeam1
             //GeheZuBau();
         }
 
-        /// <summary>
+        /// <summary> && zuckers == null
         /// Wenn eine Ameise stirbt, wird diese Methode aufgerufen. Man erfährt dadurch, wie 
         /// die Ameise gestorben ist. Die Ameise kann zu diesem Zeitpunkt aber keinerlei Aktion 
         /// mehr ausführen.
@@ -159,6 +207,35 @@ namespace AntMe.Player.AntMeTeam1
             {
                 GeheZuBau();
             }*/
+
+            //Wenn die Ameise Last hat, dann soll sie zum Bau gehen
+            if (AktuelleLast != 0)
+            {
+                GeheZuBauOptimized(bau);
+            }
+
+            //Schaue wie gro
+            if (ankunftsort != null)
+            {
+                int distance = Koordinate.BestimmeEntfernung(this, ankunftsort);
+                if (distance < Sichtweite / 2)
+                {
+                    GeheZuBau();
+                    ankunftsort = null;
+                }
+
+            }
+
+            //Findet heraus, ob der Zuckerberg noch existiert, wenn du dein Zucker schon abgeliefert hast
+            if (zuckers != null && AktuelleLast == 0) 
+            {
+                if (zuckers.Menge <= 0)
+                {
+                    zuckers = null;
+                    BleibStehen();
+
+                }
+            }
 
             //Ermöglicht anderen Ameisen zu wissen, wo Zucker ist
             if (AktuelleLast > 0)
@@ -185,6 +262,7 @@ namespace AntMe.Player.AntMeTeam1
             if (AktuelleLast == 0)
             {
                 GeheZuZiel(obst);
+                zuckers = null;
             }
         }
 
@@ -196,6 +274,8 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der gesichtete Zuckerhügel</param>
         public override void Sieht(Zucker zucker)
         {
+            zuckers = zucker;
+
             if (AktuelleLast == 0)
             {
                 GeheZuZiel(zucker);
@@ -216,7 +296,7 @@ namespace AntMe.Player.AntMeTeam1
             {
                 SprüheMarkierung(1000, 300);
                 Nimm(obst);
-                GeheZuBau();
+                GeheZuBauOptimized(bau);
             }
         }
 
@@ -230,7 +310,7 @@ namespace AntMe.Player.AntMeTeam1
         public override void ZielErreicht(Zucker zucker)
         {
             Nimm(zucker);
-            GeheZuBau();
+            GeheZuBauOptimized(bau);
         }
 
         #endregion
@@ -311,7 +391,7 @@ namespace AntMe.Player.AntMeTeam1
         {
             Denke("Hilfe");
 
-            if (AktuelleLast == 0)
+            if (AktuelleLast == 0 && zuckers == null)
             {
                 GeheWegVon(wanze);
             }
