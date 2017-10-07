@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using AntMe.Deutsch;
 using AntMe.Player.AntMeTeam1;
+using System.Linq;
 
 namespace AntMe.Spieler
 {
@@ -26,58 +27,72 @@ namespace AntMe.Spieler
 
         #endregion
 
-        private List<Zucker> zuckers = new List<Zucker>();                     //Liste mit allen Zuckerbergen 
+<<<<<<< HEAD
+<<<<<<< HEAD
+        private const String obsts = "obst";
+        private const String zuckers = "zucker";
+
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
-        private List<Obst> obsts = new List<Obst>();                           //Liste mit allem Obst 
         private List<Wanze> wanzes = new List<Wanze>();                        //Liste mit allen Wanzen 
         private List<Ameise> fameisen = new List<Ameise>();                    //feindliche Ameisen
+=======
+=======
+>>>>>>> parent of d74c1a5... finished basic ticketSystem
+        private List<Zucker> zuckers = new List<Zucker>();
+        private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>();
 
-        private Queue<Ticket> zTickets = new Queue<Ticket>();                   //Liste mit allen Zuckertickets
-        private Queue<Ticket> oTickets = new Queue<Ticket>();                   //Liste mit allen Obsttickets
-        private Queue<Ticket> wTickets = new Queue<Ticket>();                   //Liste mit allen Wanzen
-        private Queue<Ticket> fTickets = new Queue<Ticket>();                   //Liste mit allen feindlichen Ameisen
-
-
-        #region Report
+        private Queue<Ticket> tickets = new Queue<Ticket>();
+<<<<<<< HEAD
+>>>>>>> parent of d74c1a5... finished basic ticketSystem
+=======
+>>>>>>> parent of d74c1a5... finished basic ticketSystem
 
         internal void ReportSugar(Zucker zucker)
         {
-            if (!zuckers.Contains(zucker))
+            bool known = false;
+            foreach (var ticket in zTickets)
             {
-                zuckers.Add(zucker);
+                if (ticket.Zucker == zucker)
+                {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known)
+            {
                 int mengeTickets = zucker.Menge / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    zTickets.Enqueue(new Ticket() { Zucker = zucker });
+                    tickets.Enqueue(new Ticket() { Zucker = zucker });
                 }
             }
         }
+<<<<<<< HEAD
+<<<<<<< HEAD
         internal void ReportObst(Obst obst)
         {
-            if (!obsts.Contains(obst))
+            bool known = false;
+            foreach (var ticket in oTickets)
             {
-
+                if (ticket.Obst == obst)
+                {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known)
+            {
+                int mengeTickets = 250 / 10;
+                for (int i = 0; i < mengeTickets; i++)
+                {
+                    oTickets.Enqueue(new Ticket() { Obst = obst });
+                }
             }
         }
-
-        internal void ReportWanze(Wanze wanze)
-        {
-            if (!wanzes.Contains(wanze))
-            {
-
-            }
-        }
-
-        internal void ReportAmeise(Ameise ameise)
-        {
-            if (!fameisen.Contains(ameise))
-            {
-
-            }
-        }
-
-        #endregion Report
-
+=======
+>>>>>>> parent of d74c1a5... finished basic ticketSystem
+=======
+>>>>>>> parent of d74c1a5... finished basic ticketSystem
 
         internal void RegisterAmeise(AntMeTeam1Klasse ameise)
         {
@@ -87,25 +102,46 @@ namespace AntMe.Spieler
             }
         }
 
-        internal void UnregisterAmeise(AntMeTeam1Klasse ameise)
+        internal void UnregisterAmeise(AntMeTeam1Klasse ameise, Ticket ticket, String ticketType)
         {
+            if (ticket != null)
+            {
+                switch (ticketType)
+                {
+                    case obsts: oTickets.Enqueue(ticket);
+                        break;
+                    case zuckers: zTickets.Enqueue(ticket);
+                        break;
+                    default:
+                        break;
+                }
+            }
             ameisen.Remove(ameise);
         }
 
-        internal Ticket GetTicket()
+        internal Ticket ZGetTicket()
         {
-            if (zTickets.Count > 0)
+            if (tickets.Count > 0)
             {
-                return zTickets.Dequeue();
+                return tickets.Dequeue();
             }
             return null;
         }
 
+        internal Ticket OGetTicket()
+        {
+            if (oTickets.Count > 0)
+            {
+                return oTickets.Dequeue();
+            }
+            return null;
+        }
     }
 
     public class Ticket
     {
         public Zucker Zucker { get; set; }
+        public Obst Obst { get; set; }
     }
 
 
