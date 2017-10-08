@@ -32,27 +32,35 @@ namespace AntMe.Spieler
         private const String wanzes = "wanze";
         private const String fameises = "ameise";
 
-        private Bau iBau = null;
+        private bool hostile = false;
+        private int speed = -1;
 
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
         private List<Ameise> fAmeisen = new List<Ameise>();                    //feindliche Ameisen
 
-        private Queue<Ticket> Tickets = new Queue<Ticket>(); //Obst- und Zuckertickets
+        private Queue<Ticket> oTickets = new Queue<Ticket>(); //Obsttickets
+        private Queue<Ticket> zTickets = new Queue<Ticket>(); //Zuckertickets
         private Queue<Ticket> fTickets = new Queue<Ticket>(); //feindliche Ameisentickets
         private Queue<Ticket> wTickets = new Queue<Ticket>(); //Wanzentickets
 
 
-        #region Report
-
-        internal void ReportBau(Bau bau)
+        internal void ReportSpeed(int speed)
         {
-            iBau = bau;
+            if (this.speed < speed)
+            {
+                this.speed = speed;
+            }
+        }
+
+        internal void ReportHostile()
+        {
+            hostile = true;
         }
 
         internal void ReportSugar(Zucker zucker)
         {
             bool known = false;
-            foreach (var ticket in Tickets)
+            foreach (var ticket in zTickets)
             {
                 if (ticket.Zucker == zucker)
                 {
@@ -65,7 +73,7 @@ namespace AntMe.Spieler
                 int mengeTickets = zucker.Menge / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    Tickets.Enqueue(new Ticket() { Zucker = zucker });
+                    zTickets.Enqueue(new Ticket() { Zucker = zucker });
                 }
             }
         }
@@ -73,7 +81,7 @@ namespace AntMe.Spieler
         internal void ReportObst(Obst obst)
         {
             bool known = false;
-            foreach (var ticket in Tickets)
+            foreach (var ticket in oTickets)
             {
                 if (ticket.Obst == obst)
                 {
@@ -86,7 +94,7 @@ namespace AntMe.Spieler
                 int mengeTickets = 250 / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    Tickets.Enqueue(new Ticket() { Obst = obst });
+                    oTickets.Enqueue(new Ticket() { Obst = obst });
                 }
             }
         }
@@ -133,15 +141,6 @@ namespace AntMe.Spieler
             }
         }
 
-        #endregion
-
-
-        internal void ClearEnemyTickets()
-        {
-            fTickets.Clear();
-            wTickets.Clear();
-        }
-
         internal void RegisterAmeise(AntMeTeam1Klasse ameise)
         {
             if (!ameisen.Contains(ameise))
@@ -157,10 +156,10 @@ namespace AntMe.Spieler
                 switch (ticketType)
                 {
                     case obsts:
-                        Tickets.Enqueue(ticket);
+                        oTickets.Enqueue(ticket);
                         break;
                     case zuckers:
-                        Tickets.Enqueue(ticket);
+                        zTickets.Enqueue(ticket);
                         break;
                     case wanzes:
                         wTickets.Enqueue(ticket);
@@ -176,111 +175,50 @@ namespace AntMe.Spieler
             ameisen.Remove(ameise);
         }
 
+        internal int GetSpeed()
+        {
+            return speed;
+        }
+
+        internal bool GetHostility()
+        {
+            return hostile;
+        }
+
         internal Ticket ZGetTicket()
         {
-            if (Tickets.Count > 0)
+            if (zTickets.Count > 0)
             {
-                return Tickets.Dequeue();
+                return zTickets.Dequeue();
             }
             return null;
         }
 
         internal Ticket OGetTicket()
         {
-            if (Tickets.Count > 0)
+            if (oTickets.Count > 0)
             {
-                return Tickets.Dequeue();
+                return oTickets.Dequeue();
             }
             return null;
         }
 
-        internal Ticket WGetTicket(AntMeTeam1Klasse ameise)
+        internal Ticket WGetTicket()
         {
-
-            if (wTickets.Count > 0)
+            if (oTickets.Count > 0)
             {
                 return wTickets.Dequeue();
             }
             return null;
         }
 
-        internal Ticket FGetTicket(AntMeTeam1Klasse ameise)
+        internal Ticket FGetTicket()
         {
-
-            if (fTickets.Count > 0)
+            if (oTickets.Count > 0)
             {
                 return fTickets.Dequeue();
             }
             return null;
-        }
-
-        internal Bau GetBau()
-        {
-            return iBau;
-        }
-
-        //Sortiert das Ticket Queue so, dass für die spezifische Ameise die Tickets, die am dichtesten sind, zuerst abgearbeitet werden
-        internal Queue<Ticket> SortTickets(Queue<Ticket> tickets, String ticketType, AntMeTeam1Klasse ameise)
-        {
-            List<Ticket> ticketList = new List<Ticket>();
-            int counter = 0;     //Zählt die druchlaufsrunden
-            int index = 0;      //Index des am kürzesten enfernten Tickets
-            int sDistance = -1; //kürzeste Distanz zwischen Ameise und ticket
-
-            //Schaut für jedes Ticket, welche Distanz zwischen Ameise und Ticket herrscht
-            foreach (Ticket ticket in tickets)
-            {
-                Spielobjekt spielobjekt = null;
-                switch (ticketType)
-                {
-                    case fameises:
-                        spielobjekt = ticket.Ameise;
-                        int distance1 = Koordinate.BestimmeEntfernung(ameise, spielobjekt);
-                        if (distance1 < sDistance)
-                        {
-                            sDistance = distance1;
-                            index = counter;
-                        }
-                        ticketList.Add(ticket);
-                        break;
-
-                    case wanzes:
-                        spielobjekt = ticket.Wanze;
-                        int distance2 = Koordinate.BestimmeEntfernung(ameise, spielobjekt);
-                        if (distance2 < sDistance)
-                        {
-                            sDistance = distance2;
-                            index = counter;
-                        }
-                        ticketList.Add(ticket);
-                        break;
-
-
-                    default:
-                        ticketList.Add(ticket);
-                        break;
-                }
-                counter++;
-                ticketList.Add(ticket);
-            }
-
-            //Entlehre den Queue
-            tickets.Clear();
-
-            //Fügt das Ticket, das am nähsten ist zuerst ein
-            if(sDistance != -1)
-            {
-                tickets.Enqueue(ticketList[index]);
-                ticketList.RemoveAt(index);
-            }
-
-            //Fügt die restlichen Tickets wieder ein
-            foreach (Ticket ticket in ticketList)
-            {
-                tickets.Enqueue(ticket);
-            }
-
-            return tickets;
         }
     }
 
