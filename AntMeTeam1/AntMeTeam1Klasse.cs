@@ -31,9 +31,9 @@ namespace AntMe.Player.AntMeTeam1
         AngriffModifikator = -1,             // Angriffsstärke einer Ameise
         DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
         EnergieModifikator = -1,             // Lebensenergie einer Ameise
-        GeschwindigkeitModifikator = 2,     // Laufgeschwindigkeit einer Ameise
+        GeschwindigkeitModifikator = 1,     // Laufgeschwindigkeit einer Ameise
         LastModifikator = 2,                // Tragkraft einer Ameise
-        ReichweiteModifikator = -1,          // Ausdauer einer Ameise
+        ReichweiteModifikator = 0,          // Ausdauer einer Ameise
         SichtweiteModifikator = 0           // Sichtweite einer Ameise
     )]
 
@@ -77,8 +77,8 @@ namespace AntMe.Player.AntMeTeam1
         EnergieModifikator = 2,             // Lebensenergie einer Ameise
         GeschwindigkeitModifikator = -1,     // Laufgeschwindigkeit einer Ameise
         LastModifikator = -1,                // Tragkraft einer Ameise
-        ReichweiteModifikator = -1,          // Ausdauer einer Ameise
-        SichtweiteModifikator = 0           // Sichtweite einer Ameise
+        ReichweiteModifikator = 0,          // Ausdauer einer Ameise
+        SichtweiteModifikator = -1           // Sichtweite einer Ameise
     )]
 
 
@@ -86,15 +86,10 @@ namespace AntMe.Player.AntMeTeam1
     {
         #region Self-Made
 
-        private Spielobjekt ziel = null; //Speichert den Zuckerberg, damit die Ameise später den Zucker wiederfindet
+        private Zucker zuckers = null; //Speichert den Zuckerberg, damit die Ameise später den Zucker wiederfindet
         private Bau bau = null;
         private Spielobjekt ankunftsort = null;
         private Ticket ticket = null;
-        private String ticketTyp = null;
-        private const String fighter = "Fighter";
-        private const String obsts = "obst";
-        private const String zuckers = "zucker";
-
 
 
         private void GeheZuZielOptimized(Spielobjekt spielobjekt)
@@ -169,7 +164,7 @@ namespace AntMe.Player.AntMeTeam1
                 BleibStehen();
                 switch (this.Kaste)
                 {
-                    case fighter:
+                    case "Fighter":
                         break;
 
                     default:
@@ -180,41 +175,23 @@ namespace AntMe.Player.AntMeTeam1
 
 
 
-            //Falls es noch ein Ziel gibt, dann gehe zum Ziel, sont hole dir ein Ticket
-            if (ziel != null)
+            //Falls es noch einen Zuckerberg gibt, dann gehe zum Zuckerberg
+            if (zuckers != null)
             {
-                GeheZuZielOptimized(ziel);
+                GeheZuZielOptimized(zuckers);
             }
             else
             {
-                if (ticket == null && this.Kaste != fighter)
-                {
-                    ticket = TicketManager.Instance.OGetTicket();
-
-                    if (ticket != null)
-                    {
-                        ziel = ticket.Obst;
-                        ticketTyp = obsts;
-                        GeheZuZielOptimized(ziel);
-                        Denke("Ticket");
-                    }
-                }
-                if (ticket == null && this.Kaste != fighter)
-                {
-                    ticket = TicketManager.Instance.ZGetTicket();
-
-                    if (ticket != null)
-                    {
-                        ziel = ticket.Zucker;
-                        ticketTyp = zuckers;
-                        GeheZuZielOptimized(ziel);
-                        Denke("Ticket");
-                    }
-                }
+                ticket = TicketManager.Instance.GetTicket();
                 if (ticket == null)
                 {
                     GeheGeradeaus();
-                    ticketTyp = null;
+                }
+                else
+                {
+                    zuckers = ticket.Zucker;
+                    GeheZuZielOptimized(ticket.Zucker);
+                    Denke("Ticket!");
                 }
             }
         }
@@ -225,6 +202,7 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void WirdMüde()
         {
+            //GeheZuBau();
         }
 
         /// <summary> && zuckers == null
@@ -236,7 +214,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="todesart">Art des Todes</param>
         public override void IstGestorben(Todesart todesart)
         {
-            TicketManager.Instance.UnregisterAmeise(this, ticket, ticketTyp);
+            TicketManager.Instance.UnregisterAmeise(this);
         }
 
         /// <summary>
@@ -272,27 +250,13 @@ namespace AntMe.Player.AntMeTeam1
             }
 
             //Findet heraus, ob der Zuckerberg noch existiert, wenn du dein Zucker schon abgeliefert hast
-            if (ziel != null && AktuelleLast == 0)
+            if (zuckers != null && AktuelleLast == 0)
             {
-                switch (ticketTyp)
+                if (zuckers.Menge <= 0)
                 {
-                    case obsts:
-                        if (!BrauchtNochTräger(ticket.Obst))
-                        {
-                            ziel = null;
-                            ticket = null;
-                            BleibStehen();
-                        }
-                        break;
+                    zuckers = null;
+                    BleibStehen();
 
-                    case zuckers: 
-                        if (ticket.Zucker.Menge <= 0)
-                        {
-                            ziel = null;
-                            ticket = null;
-                            BleibStehen();
-                        }
-                        break;
                 }
             }
 
@@ -323,9 +287,11 @@ namespace AntMe.Player.AntMeTeam1
             //Übergebe Obst an den Ticketmanager
             TicketManager.Instance.ReportObst(obst);
 
-            if (AktuelleLast == 0 && BrauchtNochTräger(obst) && ticketTyp == obsts)
+            if (AktuelleLast == 0 && BrauchtNochTräger(obst))
             {
+                //SprüheMarkierung(1000, 300);
                 GeheZuZiel(obst);
+                zuckers = null;
             }
         }
 
@@ -337,10 +303,10 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="zucker">Der gesichtete Zuckerhügel</param>
         public override void Sieht(Zucker zucker)
         {
-            //zuckers = zucker;
+            zuckers = zucker;
             TicketManager.Instance.ReportSugar(zucker);
 
-            if (AktuelleLast == 0 && ticketTyp == zuckers)
+            if (AktuelleLast == 0)
             {
                 GeheZuZiel(zucker);
             }
@@ -358,9 +324,9 @@ namespace AntMe.Player.AntMeTeam1
             //Nur wenn noch Träger gebraucht werden
             if (BrauchtNochTräger(obst) == true)
             {
-                //SprüheMarkierung(1000, 300);
+                SprüheMarkierung(1000, 300);
                 Nimm(obst);
-                GeheZuBau();
+                GeheZuBauOptimized(bau);
             }
         }
 
@@ -374,7 +340,7 @@ namespace AntMe.Player.AntMeTeam1
         public override void ZielErreicht(Zucker zucker)
         {
             Nimm(zucker);
-            GeheZuBau();
+            GeheZuBauOptimized(bau);
         }
 
         #endregion
@@ -443,6 +409,8 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="ameise">Erspähte feindliche Ameise</param>
         public override void SiehtFeind(Ameise ameise)
         {
+            //Überge Feind an Ticketsystem
+            TicketManager.Instance.ReportAmeise(ameise);
         }
 
         /// <summary>
@@ -453,12 +421,14 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Erspähte Wanze</param>
         public override void SiehtFeind(Wanze wanze)
         {
+            //Übergebe feindliche Wanze an Ticketsystem
+            TicketManager.Instance.ReportWanze(wanze);
+
             Denke("Hilfe");
 
-            if (AktuelleLast == 0 && ticket == null)
+            if (AktuelleLast == 0 && zuckers == null)
             {
                 GeheWegVon(wanze);
-
             }
 
         }
