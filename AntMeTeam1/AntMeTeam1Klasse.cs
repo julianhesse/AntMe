@@ -505,7 +505,7 @@ namespace AntMe.Player.AntMeTeam1
             //{
             //    GeheZuZiel(markierung);
             //}
-            if (Ziel == null && this.Kaste == fighter && !wegLaufen)
+            if (Ziel == null && this.Kaste == fighter && (!wegLaufen || markierung.Information == 100))
             {
                 GeheZuZiel(markierung);
             }
@@ -549,6 +549,7 @@ namespace AntMe.Player.AntMeTeam1
             if(ameise.AktuelleLast != 0)
             {
                 trotzdemAngreifen = true;
+                SprüheMarkierung(100, 200);
             }
             else
             {
