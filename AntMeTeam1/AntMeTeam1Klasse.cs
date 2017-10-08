@@ -318,7 +318,7 @@ namespace AntMe.Player.AntMeTeam1
             }
 
             //Findet heraus, ob der Zuckerberg noch existiert, wenn du dein Zucker schon abgeliefert hast
-            if (ziel != null && AktuelleLast == 0)
+            if (ziel != null && AktuelleLast == 0 && this.Kaste != fighter)
             {
                 switch (ticketTyp)
                 {
@@ -340,6 +340,51 @@ namespace AntMe.Player.AntMeTeam1
                         }
                         break;
                 }
+            }
+
+            //Findet heraus, es tickets für feindliche Ameisen gibt und dann den fightern diese zuspielt
+            if( this.Kaste == fighter && this.AktuelleEnergie >= 50)
+            {
+                if(ticketTyp == wanzes)
+                {
+                    Ticket ticketAlternativ = null;
+                    ticketAlternativ = TicketManager.Instance.FGetTicket();
+
+                    if(ticketAlternativ != null)
+                    {
+                        TicketManager.Instance.UnregisterAmeise(this, ticket, ticketTyp);
+                        ticket = ticketAlternativ;
+                        ticketTyp = fameises;
+                        ziel = ticket.Ameise;
+                        GeheZuZielOptimized(ziel);
+                    }
+                    else
+                    {
+                        TicketManager.Instance.UnregisterAmeise(this, ticketAlternativ, ticketTyp);
+                    }
+                }
+            }
+            else
+            {
+                if (ticketTyp == fameises)
+                {
+                    Ticket ticketAlternativ = null;
+                    ticketAlternativ = TicketManager.Instance.WGetTicket();
+
+                    if(ticketAlternativ != null)
+                    {
+                        TicketManager.Instance.UnregisterAmeise(this, ticket, ticketTyp);
+                        ticket = ticketAlternativ;
+                        ticketTyp = wanzes;
+                        ziel = ticket.Wanze;
+                        GeheZuZielOptimized(ziel);
+                    }
+                    else
+                    {
+                        TicketManager.Instance.UnregisterAmeise(this, ticketAlternativ, ticketTyp);
+                    }
+                }
+
             }
 
             //Ermöglicht anderen Ameisen zu wissen, wo Zucker ist
@@ -519,6 +564,10 @@ namespace AntMe.Player.AntMeTeam1
         public override void WirdAngegriffen(Ameise ameise)
         {
             TicketManager.Instance.ReportFAmeise(ameise);
+            if (this.Kaste == "Fighter")
+            {
+                this.GreifeAn(ameise);
+            }
         }
 
         /// <summary>
@@ -530,6 +579,11 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Angreifende Wanze</param>
         public override void WirdAngegriffen(Wanze wanze)
         {
+            if (this.Kaste == "Fighter")
+            {
+                this.GreifeAn(wanze);
+            }
+
             TicketManager.Instance.ReportWanze(wanze);
         }
 
