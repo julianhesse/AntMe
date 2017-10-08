@@ -27,25 +27,15 @@ namespace AntMe.Spieler
 
         #endregion
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         private const String obsts = "obst";
         private const String zuckers = "zucker";
 
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
         private List<Wanze> wanzes = new List<Wanze>();                        //Liste mit allen Wanzen 
         private List<Ameise> fameisen = new List<Ameise>();                    //feindliche Ameisen
-=======
-=======
->>>>>>> parent of d74c1a5... finished basic ticketSystem
-        private List<Zucker> zuckers = new List<Zucker>();
-        private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>();
 
-        private Queue<Ticket> tickets = new Queue<Ticket>();
-<<<<<<< HEAD
->>>>>>> parent of d74c1a5... finished basic ticketSystem
-=======
->>>>>>> parent of d74c1a5... finished basic ticketSystem
+        private Queue<Ticket> oTickets = new Queue<Ticket>();
+        private Queue<Ticket> zTickets = new Queue<Ticket>();
 
         internal void ReportSugar(Zucker zucker)
         {
@@ -63,12 +53,11 @@ namespace AntMe.Spieler
                 int mengeTickets = zucker.Menge / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    tickets.Enqueue(new Ticket() { Zucker = zucker });
+                    zTickets.Enqueue(new Ticket() { Zucker = zucker });
                 }
             }
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
+
         internal void ReportObst(Obst obst)
         {
             bool known = false;
@@ -89,10 +78,6 @@ namespace AntMe.Spieler
                 }
             }
         }
-=======
->>>>>>> parent of d74c1a5... finished basic ticketSystem
-=======
->>>>>>> parent of d74c1a5... finished basic ticketSystem
 
         internal void RegisterAmeise(AntMeTeam1Klasse ameise)
         {
@@ -121,9 +106,9 @@ namespace AntMe.Spieler
 
         internal Ticket ZGetTicket()
         {
-            if (tickets.Count > 0)
+            if (zTickets.Count > 0)
             {
-                return tickets.Dequeue();
+                return zTickets.Dequeue();
             }
             return null;
         }
