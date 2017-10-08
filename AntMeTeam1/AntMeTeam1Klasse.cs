@@ -92,9 +92,13 @@ namespace AntMe.Player.AntMeTeam1
         private Ticket ticket = null;
         private String ticketTyp = null;
         private Random rnd = new Random();
+   
         private const String fighter = "Fighter";
         private const String obsts = "obst";
         private const String zuckers = "zucker";
+        private const String wanzes = "wanze";
+        private const String fameises = "ameise";
+        
 
 
         private int ZufallsZahl(int wert1, int wert2)
@@ -140,21 +144,28 @@ namespace AntMe.Player.AntMeTeam1
         {
             // Gibt den Namen der betroffenen Kaste zurück.
             ///*
-            if( anzahl[fighter] < 10)
+            if (anzahl["Kämpfer"] < 20)
             {
-                return fighter;
-            }
-            //*/
-
-            
-
-            if (anzahl["Standard"] < 50)
-            {
-                return "Standard";
+                return "Kämpfer";
             }
             else
             {
-                return "Sammler";
+                if (anzahl["Sammler"] <= 50)
+                {
+                    return "Sammler";
+                }
+                else
+                {
+                    if (anzahl["Kämpfer"] > 50)
+                    {
+                        return "Kämpfer";
+                    }
+                    else
+                    {
+                        return "Sammler";
+                    }
+
+                }
             }
         }
 
@@ -187,9 +198,36 @@ namespace AntMe.Player.AntMeTeam1
             }
 
 
+            if (ziel != null && this.Kaste == fighter)
+            {
+                if(ticket == null)
+                {
+                    ticket = TicketManager.Instance.FGetTicket();
+                    
+                    if(ticket == null)
+                    {
+                        ziel = ticket.Ameise;
+                        ticketTyp = fameises;
+                        GeheZuZielOptimized(ziel);
+                        Denke("FAmeise!!");
+                    }
+                }
+                if(ticket == null)
+                {
+                    ticket = TicketManager.Instance.WGetTicket();
+
+                    if(ticket == null)
+                    {
+                        ziel = ticket.Wanze;
+                        ticketTyp = wanzes;
+                        GeheZuZielOptimized(ziel);
+                        Denke("FAmeise!!");
+                    }
+                }
+            }
 
             //Falls es noch ein Ziel gibt, dann gehe zum Ziel, sont hole dir ein Ticket
-            if (ziel != null)
+            if (ziel != null && this.Kaste != fighter)
             {
                 GeheZuZielOptimized(ziel);
             }
@@ -204,7 +242,7 @@ namespace AntMe.Player.AntMeTeam1
                         ziel = ticket.Obst;
                         ticketTyp = obsts;
                         GeheZuZielOptimized(ziel);
-                        Denke("Ticket");
+                        Denke("Zucker");
                     }
                 }
                 if (ticket == null && this.Kaste != fighter)
@@ -216,7 +254,7 @@ namespace AntMe.Player.AntMeTeam1
                         ziel = ticket.Zucker;
                         ticketTyp = zuckers;
                         GeheZuZielOptimized(ziel);
-                        Denke("Ticket");
+                        Denke("Obst");
                     }
                 }
                 if (ticket == null)
@@ -277,7 +315,6 @@ namespace AntMe.Player.AntMeTeam1
                     GeheZuBau();
                     ankunftsort = null;
                 }
-
             }
 
             //Findet heraus, ob der Zuckerberg noch existiert, wenn du dein Zucker schon abgeliefert hast
@@ -481,6 +518,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="ameise">Angreifende Ameise</param>
         public override void WirdAngegriffen(Ameise ameise)
         {
+            TicketManager.Instance.ReportFAmeise(ameise);
         }
 
         /// <summary>
@@ -492,6 +530,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Angreifende Wanze</param>
         public override void WirdAngegriffen(Wanze wanze)
         {
+            TicketManager.Instance.ReportWanze(wanze);
         }
 
         #endregion

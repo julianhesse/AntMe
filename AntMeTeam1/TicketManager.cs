@@ -29,13 +29,16 @@ namespace AntMe.Spieler
 
         private const String obsts = "obst";
         private const String zuckers = "zucker";
+        private const String wanzes = "wanze";
+        private const String fameises = "ameise";
 
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
-        private List<Wanze> wanzes = new List<Wanze>();                        //Liste mit allen Wanzen 
-        private List<Ameise> fameisen = new List<Ameise>();                    //feindliche Ameisen
+        private List<Ameise> fAmeisen = new List<Ameise>();                    //feindliche Ameisen
 
-        private Queue<Ticket> oTickets = new Queue<Ticket>();
-        private Queue<Ticket> zTickets = new Queue<Ticket>();
+        private Queue<Ticket> oTickets = new Queue<Ticket>(); //Obsttickets
+        private Queue<Ticket> zTickets = new Queue<Ticket>(); //Zuckertickets
+        private Queue<Ticket> fTickets = new Queue<Ticket>(); //feindliche Ameisentickets
+        private Queue<Ticket> wTickets = new Queue<Ticket>(); //Wanzentickets
 
         internal void ReportSugar(Zucker zucker)
         {
@@ -79,6 +82,48 @@ namespace AntMe.Spieler
             }
         }
 
+        internal void ReportFAmeise(Ameise ameise)
+        {
+            bool known = false;
+            foreach (var ticket in fTickets)
+            {
+                if (ticket.Ameise == ameise)
+                {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known)
+            {
+                int mengeTickets = ameise.AktuelleEnergie / 30;
+                for (int i = 0; i < mengeTickets; i++)
+                {
+                    fTickets.Enqueue(new Ticket() { Ameise = ameise });
+                }
+            }
+        }
+
+        internal void ReportWanze(Wanze wanze)
+        {
+            bool known = false;
+            foreach (var ticket in wTickets)
+            {
+                if (ticket.Wanze == wanze)
+                {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known)
+            {
+                int mengeTickets = wanze.AktuelleEnergie / 30;
+                for (int i = 0; i < mengeTickets; i++)
+                {
+                    wTickets.Enqueue(new Ticket() { Wanze = wanze });
+                }
+            }
+        }
+
         internal void RegisterAmeise(AntMeTeam1Klasse ameise)
         {
             if (!ameisen.Contains(ameise))
@@ -99,6 +144,13 @@ namespace AntMe.Spieler
                     case zuckers:
                         zTickets.Enqueue(ticket);
                         break;
+                    case wanzes:
+                        wTickets.Enqueue(ticket);
+                        break;
+                    case fameises:
+                        fTickets.Enqueue(ticket);
+                        break;
+
                     default:
                         break;
                 }
@@ -123,12 +175,32 @@ namespace AntMe.Spieler
             }
             return null;
         }
+
+        internal Ticket WGetTicket()
+        {
+            if (oTickets.Count > 0)
+            {
+                return wTickets.Dequeue();
+            }
+            return null;
+        }
+
+        internal Ticket FGetTicket()
+        {
+            if (oTickets.Count > 0)
+            {
+                return fTickets.Dequeue();
+            }
+            return null;
+        }
     }
 
     public class Ticket
     {
         public Zucker Zucker { get; set; }
         public Obst Obst { get; set; }
+        public Ameise Ameise { get; set; }
+        public Wanze Wanze { get; set; }
     }
 
 
