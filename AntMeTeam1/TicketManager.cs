@@ -32,6 +32,8 @@ namespace AntMe.Spieler
         private const String wanzes = "wanze";
         private const String fameises = "ameise";
 
+        private Bau iBau = null;
+
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
         private List<Ameise> fAmeisen = new List<Ameise>();                    //feindliche Ameisen
 
@@ -39,6 +41,14 @@ namespace AntMe.Spieler
         private Queue<Ticket> zTickets = new Queue<Ticket>(); //Zuckertickets
         private Queue<Ticket> fTickets = new Queue<Ticket>(); //feindliche Ameisentickets
         private Queue<Ticket> wTickets = new Queue<Ticket>(); //Wanzentickets
+
+
+        #region Report
+
+        internal void ReportBau(Bau bau)
+        {
+            iBau = bau;
+        }
 
         internal void ReportSugar(Zucker zucker)
         {
@@ -124,6 +134,15 @@ namespace AntMe.Spieler
             }
         }
 
+        #endregion
+
+
+        internal void ClearEnemyTickets()
+        {
+            fTickets.Clear();
+            wTickets.Clear();
+        }
+
         internal void RegisterAmeise(AntMeTeam1Klasse ameise)
         {
             if (!ameisen.Contains(ameise))
@@ -176,22 +195,95 @@ namespace AntMe.Spieler
             return null;
         }
 
-        internal Ticket WGetTicket()
+        internal Ticket WGetTicket(AntMeTeam1Klasse ameise)
         {
-            if (oTickets.Count > 0)
+
+            if (wTickets.Count > 0)
             {
+                //wTickets = SortTickets(wTickets, wanzes, ameise);
                 return wTickets.Dequeue();
             }
             return null;
         }
 
-        internal Ticket FGetTicket()
+        internal Ticket FGetTicket(AntMeTeam1Klasse ameise)
         {
-            if (oTickets.Count > 0)
+
+            if (fTickets.Count > 0)
             {
+                //fTickets = SortTickets(fTickets, fameises, ameise);
                 return fTickets.Dequeue();
             }
             return null;
+        }
+
+        internal Bau GetBau()
+        {
+            return iBau;
+        }
+
+        //Sortiert das Ticket Queue so, dass für die spezifische Ameise die Tickets, die am dichtesten sind, zuerst abgearbeitet werden
+        internal Queue<Ticket> SortTickets(Queue<Ticket> tickets, String ticketType, AntMeTeam1Klasse ameise)
+        {
+            List<Ticket> ticketList = new List<Ticket>();
+            int counter = 0;     //Zählt die druchlaufsrunden
+            int index = 0;      //Index des am kürzesten enfernten Tickets
+            int sDistance = -1; //kürzeste Distanz zwischen Ameise und ticket
+
+            //Schaut für jedes Ticket, welche Distanz zwischen Ameise und Ticket herrscht
+            foreach (Ticket ticket in tickets)
+            {
+                Spielobjekt spielobjekt = null;
+                switch (ticketType)
+                {
+                    case fameises:
+                        spielobjekt = ticket.Ameise;
+                        int distance1 = Koordinate.BestimmeEntfernung(ameise, spielobjekt);
+                        if (distance1 < sDistance)
+                        {
+                            sDistance = distance1;
+                            index = counter;
+                        }
+                        ticketList.Add(ticket);
+                        break;
+
+                    case wanzes:
+                        spielobjekt = ticket.Wanze;
+                        int distance2 = Koordinate.BestimmeEntfernung(ameise, spielobjekt);
+                        if (distance2 < sDistance)
+                        {
+                            sDistance = distance2;
+                            index = counter;
+                        }
+                        ticketList.Add(ticket);
+                        break;
+
+
+                    default:
+                        ticketList.Add(ticket);
+                        break;
+                }
+                counter++;
+                ticketList.Add(ticket);
+            }
+
+            //Entlehre den Queue
+            tickets.Clear();
+
+            //Fügt das Ticket, das am nähsten ist zuerst ein
+            if(sDistance != -1)
+            {
+                tickets.Enqueue(ticketList[index]);
+                ticketList.RemoveAt(index);
+            }
+
+            //Fügt die restlichen Tickets wieder ein
+            foreach (Ticket ticket in ticketList)
+            {
+                tickets.Enqueue(ticket);
+            }
+
+            return tickets;
         }
     }
 
