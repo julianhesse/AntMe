@@ -135,13 +135,13 @@ namespace AntMe.Player.AntMeTeam1
                 return "Spotter";
             }
             */
-            if (anzahl["Standard"] < 50)
+            if (anzahl["Sammler"] < 50)
             {
-                return "Standard";
+                return "Sammler";
             }
             else
             {
-                return "Sammler";
+                return "Standard";
             }
         }
 
