@@ -1,10 +1,18 @@
+<<<<<<< HEAD
 <?xml version="1.0" encoding="utf-8"?>
+=======
+﻿<?xml version="1.0" encoding="utf-8"?>
+>>>>>>> ticketManager
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+<<<<<<< HEAD
     <ProjectGuid>{a8d330f2-f796-4b78-86b8-4ef81facb4fb}</ProjectGuid>
+=======
+    <ProjectGuid>{C4BD5C31-167D-47B9-BEAB-DD06AC287174}</ProjectGuid>
+>>>>>>> ticketManager
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AntMe.Player.AntMeTeam1</RootNamespace>
@@ -29,7 +37,11 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+<<<<<<< HEAD
 	<PlatformTarget>x86</PlatformTarget>
+=======
+    <PlatformTarget>x86</PlatformTarget>
+>>>>>>> ticketManager
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AntMe.SharedComponents">
@@ -51,6 +63,10 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AntMeTeam1Klasse.cs" />
+<<<<<<< HEAD
+=======
+    <Compile Include="TicketManager.cs" />
+>>>>>>> ticketManager
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

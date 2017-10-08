@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+<<<<<<< HEAD
+=======
+using AntMe.Spieler;
+>>>>>>> ticketManager
 
 namespace AntMe.Player.AntMeTeam1
 {
@@ -88,13 +92,22 @@ namespace AntMe.Player.AntMeTeam1
         private Zucker zuckers = null; //Speichert den Zuckerberg, damit die Ameise später den Zucker wiederfindet
         private Bau bau = null;
         private Spielobjekt ankunftsort = null;
+<<<<<<< HEAD
+=======
+        private Ticket ticket = null;
+>>>>>>> ticketManager
 
 
         private void GeheZuZielOptimized(Spielobjekt spielobjekt)
         {
             int distance = Koordinate.BestimmeEntfernung(this, spielobjekt);
+<<<<<<< HEAD
             int angle = Koordinate.BestimmeRichtung(this, spielobjekt);
             DreheInRichtung(angle);
+=======
+            //int angle = Koordinate.BestimmeRichtung(this, spielobjekt);
+            DreheZuZiel(spielobjekt);
+>>>>>>> ticketManager
             GeheGeradeaus(distance);
         }
 
@@ -160,9 +173,25 @@ namespace AntMe.Player.AntMeTeam1
                 GeheZuBau();
                 bau = Ziel as Bau;
                 BleibStehen();
+<<<<<<< HEAD
             }
 
 
+=======
+                switch (this.Kaste)
+                {
+                    case "Fighter":
+                        break;
+
+                    default:
+                        TicketManager.Instance.RegisterAmeise(this);
+                        break;
+                }
+            }
+
+
+
+>>>>>>> ticketManager
             //Falls es noch einen Zuckerberg gibt, dann gehe zum Zuckerberg
             if (zuckers != null)
             {
@@ -170,7 +199,21 @@ namespace AntMe.Player.AntMeTeam1
             }
             else
             {
+<<<<<<< HEAD
                 GeheGeradeaus();
+=======
+                ticket = TicketManager.Instance.GetTicket();
+                if (ticket == null)
+                {
+                    GeheGeradeaus();
+                }
+                else
+                {
+                    zuckers = ticket.Zucker;
+                    GeheZuZielOptimized(ticket.Zucker);
+                    Denke("Ticket!");
+                }
+>>>>>>> ticketManager
             }
         }
 
@@ -192,6 +235,10 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="todesart">Art des Todes</param>
         public override void IstGestorben(Todesart todesart)
         {
+<<<<<<< HEAD
+=======
+            TicketManager.Instance.UnregisterAmeise(this);
+>>>>>>> ticketManager
         }
 
         /// <summary>
@@ -227,7 +274,11 @@ namespace AntMe.Player.AntMeTeam1
             }
 
             //Findet heraus, ob der Zuckerberg noch existiert, wenn du dein Zucker schon abgeliefert hast
+<<<<<<< HEAD
             if (zuckers != null && AktuelleLast == 0) 
+=======
+            if (zuckers != null && AktuelleLast == 0)
+>>>>>>> ticketManager
             {
                 if (zuckers.Menge <= 0)
                 {
@@ -238,6 +289,10 @@ namespace AntMe.Player.AntMeTeam1
             }
 
             //Ermöglicht anderen Ameisen zu wissen, wo Zucker ist
+<<<<<<< HEAD
+=======
+            /*
+>>>>>>> ticketManager
             if (AktuelleLast > 0)
             {
                 if (GetragenesObst == null)
@@ -245,6 +300,10 @@ namespace AntMe.Player.AntMeTeam1
                     SprüheMarkierung(Richtung + 180, 100);
                 }
             }
+<<<<<<< HEAD
+=======
+            */
+>>>>>>> ticketManager
         }
 
         #endregion
@@ -259,8 +318,17 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="obst">Das gesichtete Stück Obst</param>
         public override void Sieht(Obst obst)
         {
+<<<<<<< HEAD
             if (AktuelleLast == 0)
             {
+=======
+            //Übergebe Obst an den Ticketmanager
+            TicketManager.Instance.ReportObst(obst);
+
+            if (AktuelleLast == 0 && BrauchtNochTräger(obst))
+            {
+                //SprüheMarkierung(1000, 300);
+>>>>>>> ticketManager
                 GeheZuZiel(obst);
                 zuckers = null;
             }
@@ -275,6 +343,10 @@ namespace AntMe.Player.AntMeTeam1
         public override void Sieht(Zucker zucker)
         {
             zuckers = zucker;
+<<<<<<< HEAD
+=======
+            TicketManager.Instance.ReportSugar(zucker);
+>>>>>>> ticketManager
 
             if (AktuelleLast == 0)
             {
@@ -379,6 +451,11 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="ameise">Erspähte feindliche Ameise</param>
         public override void SiehtFeind(Ameise ameise)
         {
+<<<<<<< HEAD
+=======
+            //Überge Feind an Ticketsystem
+            TicketManager.Instance.ReportAmeise(ameise);
+>>>>>>> ticketManager
         }
 
         /// <summary>
@@ -389,6 +466,12 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="wanze">Erspähte Wanze</param>
         public override void SiehtFeind(Wanze wanze)
         {
+<<<<<<< HEAD
+=======
+            //Übergebe feindliche Wanze an Ticketsystem
+            TicketManager.Instance.ReportWanze(wanze);
+
+>>>>>>> ticketManager
             Denke("Hilfe");
 
             if (AktuelleLast == 0 && zuckers == null)
