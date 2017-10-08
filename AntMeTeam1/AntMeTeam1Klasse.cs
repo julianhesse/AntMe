@@ -140,9 +140,9 @@ namespace AntMe.Player.AntMeTeam1
         {
             // Gibt den Namen der betroffenen Kaste zurück.
             ///*
-            if( anzahl["Sucher"] < 5)
+            if( anzahl[fighter] < 10)
             {
-                return "Sucher";
+                return fighter;
             }
             //*/
 
