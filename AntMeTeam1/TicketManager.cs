@@ -37,8 +37,7 @@ namespace AntMe.Spieler
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
         private List<Ameise> fAmeisen = new List<Ameise>();                    //feindliche Ameisen
 
-        private Queue<Ticket> oTickets = new Queue<Ticket>(); //Obsttickets
-        private Queue<Ticket> zTickets = new Queue<Ticket>(); //Zuckertickets
+        private Queue<Ticket> Tickets = new Queue<Ticket>(); //Obst- und Zuckertickets
         private Queue<Ticket> fTickets = new Queue<Ticket>(); //feindliche Ameisentickets
         private Queue<Ticket> wTickets = new Queue<Ticket>(); //Wanzentickets
 
@@ -53,7 +52,7 @@ namespace AntMe.Spieler
         internal void ReportSugar(Zucker zucker)
         {
             bool known = false;
-            foreach (var ticket in zTickets)
+            foreach (var ticket in Tickets)
             {
                 if (ticket.Zucker == zucker)
                 {
@@ -66,7 +65,7 @@ namespace AntMe.Spieler
                 int mengeTickets = zucker.Menge / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    zTickets.Enqueue(new Ticket() { Zucker = zucker });
+                    Tickets.Enqueue(new Ticket() { Zucker = zucker });
                 }
             }
         }
@@ -74,7 +73,7 @@ namespace AntMe.Spieler
         internal void ReportObst(Obst obst)
         {
             bool known = false;
-            foreach (var ticket in oTickets)
+            foreach (var ticket in Tickets)
             {
                 if (ticket.Obst == obst)
                 {
@@ -87,7 +86,7 @@ namespace AntMe.Spieler
                 int mengeTickets = 250 / 10;
                 for (int i = 0; i < mengeTickets; i++)
                 {
-                    oTickets.Enqueue(new Ticket() { Obst = obst });
+                    Tickets.Enqueue(new Ticket() { Obst = obst });
                 }
             }
         }
@@ -158,10 +157,10 @@ namespace AntMe.Spieler
                 switch (ticketType)
                 {
                     case obsts:
-                        oTickets.Enqueue(ticket);
+                        Tickets.Enqueue(ticket);
                         break;
                     case zuckers:
-                        zTickets.Enqueue(ticket);
+                        Tickets.Enqueue(ticket);
                         break;
                     case wanzes:
                         wTickets.Enqueue(ticket);
@@ -179,18 +178,18 @@ namespace AntMe.Spieler
 
         internal Ticket ZGetTicket()
         {
-            if (zTickets.Count > 0)
+            if (Tickets.Count > 0)
             {
-                return zTickets.Dequeue();
+                return Tickets.Dequeue();
             }
             return null;
         }
 
         internal Ticket OGetTicket()
         {
-            if (oTickets.Count > 0)
+            if (Tickets.Count > 0)
             {
-                return oTickets.Dequeue();
+                return Tickets.Dequeue();
             }
             return null;
         }
@@ -200,7 +199,6 @@ namespace AntMe.Spieler
 
             if (wTickets.Count > 0)
             {
-                //wTickets = SortTickets(wTickets, wanzes, ameise);
                 return wTickets.Dequeue();
             }
             return null;
@@ -211,7 +209,6 @@ namespace AntMe.Spieler
 
             if (fTickets.Count > 0)
             {
-                //fTickets = SortTickets(fTickets, fameises, ameise);
                 return fTickets.Dequeue();
             }
             return null;
