@@ -51,10 +51,10 @@ namespace AntMe.Player.AntMeTeam1
     [Kaste(
         Name = "Sucher",                  // Name der Berufsgruppe
         AngriffModifikator = -1,             // Angriffsstärke einer Ameise
-        DrehgeschwindigkeitModifikator = 0, // Drehgeschwindigkeit einer Ameise
+        DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
         EnergieModifikator = -1,             // Lebensenergie einer Ameise
         GeschwindigkeitModifikator = 2,     // Laufgeschwindigkeit einer Ameise
-        LastModifikator = -1,                // Tragkraft einer Ameise
+        LastModifikator = 0,                // Tragkraft einer Ameise
         ReichweiteModifikator = -1,          // Ausdauer einer Ameise
         SichtweiteModifikator = 2           // Sichtweite einer Ameise
     )]
@@ -91,11 +91,16 @@ namespace AntMe.Player.AntMeTeam1
         private Spielobjekt ankunftsort = null;
         private Ticket ticket = null;
         private String ticketTyp = null;
+        private Random rnd = new Random();
         private const String fighter = "Fighter";
         private const String obsts = "obst";
         private const String zuckers = "zucker";
 
 
+        private int ZufallsZahl(int wert1, int wert2)
+        {
+            return rnd.Next(wert1, wert2);
+        }
 
         private void GeheZuZielOptimized(Spielobjekt spielobjekt)
         {
@@ -110,7 +115,7 @@ namespace AntMe.Player.AntMeTeam1
             if (bau != null)
             {
                 GeheZuZielOptimized(spielobjekt);
-                Denke("Nach Hause");
+                //Denke("Nach Hause");
                 ankunftsort = spielobjekt;
             }
             else
@@ -134,12 +139,15 @@ namespace AntMe.Player.AntMeTeam1
         public override string BestimmeKaste(Dictionary<string, int> anzahl)
         {
             // Gibt den Namen der betroffenen Kaste zurück.
-            /*
-            if( anzahl["Spotter"] < 5)
+            ///*
+            if( anzahl["Sucher"] < 5)
             {
-                return "Spotter";
+                return "Sucher";
             }
-            */
+            //*/
+
+            
+
             if (anzahl["Standard"] < 50)
             {
                 return "Standard";
@@ -213,6 +221,7 @@ namespace AntMe.Player.AntMeTeam1
                 }
                 if (ticket == null)
                 {
+                    //DreheUmWinkel(ZufallsZahl(-30, 30));
                     GeheGeradeaus();
                     ticketTyp = null;
                 }
