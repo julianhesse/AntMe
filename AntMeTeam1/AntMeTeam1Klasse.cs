@@ -144,9 +144,9 @@ namespace AntMe.Player.AntMeTeam1
         {
             // Gibt den Namen der betroffenen Kaste zurück.
             ///*
-            if (anzahl["Kämpfer"] < 20)
+            if (anzahl[fighter] < 20)
             {
-                return "Kämpfer";
+                return fighter;
             }
             else
             {
@@ -156,9 +156,9 @@ namespace AntMe.Player.AntMeTeam1
                 }
                 else
                 {
-                    if (anzahl["Kämpfer"] > 50)
+                    if (anzahl[fighter] > 50)
                     {
-                        return "Kämpfer";
+                        return fighter;
                     }
                     else
                     {
