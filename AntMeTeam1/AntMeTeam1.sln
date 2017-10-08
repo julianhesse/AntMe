@@ -2,11 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-<<<<<<< HEAD
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntMeTeam1", "AntMeTeam1.csproj", "{A8D330F2-F796-4B78-86B8-4EF81FACB4FB}"
-=======
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntMeTeam1", "AntMeTeam1.csproj", "{C4BD5C31-167D-47B9-BEAB-DD06AC287174}"
->>>>>>> ticketManager
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,26 +10,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-<<<<<<< HEAD
-		{A8D330F2-F796-4B78-86B8-4EF81FACB4FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8D330F2-F796-4B78-86B8-4EF81FACB4FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8D330F2-F796-4B78-86B8-4EF81FACB4FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8D330F2-F796-4B78-86B8-4EF81FACB4FB}.Release|Any CPU.Build.0 = Release|Any CPU
-=======
 		{C4BD5C31-167D-47B9-BEAB-DD06AC287174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C4BD5C31-167D-47B9-BEAB-DD06AC287174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4BD5C31-167D-47B9-BEAB-DD06AC287174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4BD5C31-167D-47B9-BEAB-DD06AC287174}.Release|Any CPU.Build.0 = Release|Any CPU
->>>>>>> ticketManager
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-<<<<<<< HEAD
-		SolutionGuid = {8262E633-9664-4C6E-A678-037BD8B35B3A}
-=======
 		SolutionGuid = {BD0E6076-0780-466B-BDD4-7536BDA284F6}
->>>>>>> ticketManager
 	EndGlobalSection
 EndGlobal
