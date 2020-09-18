@@ -18,7 +18,7 @@ namespace AntMe.Player.AntMeTeam1
     /// (http://wiki.antme.net/de/Lektionen)
     /// </summary>
     [Spieler(
-        Volkname = "AntMeTeam1",   // Hier kannst du den Namen des Volkes festlegen
+        Volkname = "AntNation",   // Hier kannst du den Namen des Volkes festlegen
         Vorname = "Julian",       // An dieser Stelle kannst du dich als Schöpfer der Ameise eintragen
         Nachname = "Hesse"       // An dieser Stelle kannst du dich als Schöpfer der Ameise eintragen
     )]

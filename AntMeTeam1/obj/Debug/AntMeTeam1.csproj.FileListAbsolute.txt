@@ -10,3 +10,16 @@ C:\Users\Systemadmin\Documents\Visual Studio 2017\Projects\AntMe\AntMeTeam1\obj\
 C:\Users\Systemadmin\Documents\Visual Studio 2017\Projects\AntMe\AntMeTeam1\obj\Debug\AntMeTeam1.csproj.CoreCompileInputs.cache
 C:\Users\Systemadmin\Documents\Visual Studio 2017\Projects\AntMe\AntMeTeam1\obj\Debug\AntMe.Player.AntMeTeam1.dll
 C:\Users\Systemadmin\Documents\Visual Studio 2017\Projects\AntMe\AntMeTeam1\obj\Debug\AntMe.Player.AntMeTeam1.pdb
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\AntMe.Player.AntMeTeam1.dll
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\AntMe.Player.AntMeTeam1.pdb
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\AntMe.SharedComponents.dll
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\AntMe.Simulation.dll
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\AntMe.SharedComponents.xml
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\AntMe.Simulation.xml
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\de\AntMe.SharedComponents.resources.dll
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\bin\de\AntMe.Simulation.resources.dll
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\obj\Debug\AntMeTeam1.csprojAssemblyReference.cache
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\obj\Debug\AntMeTeam1.csproj.CoreCompileInputs.cache
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\obj\Debug\AntMeTeam1.csproj.CopyComplete
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\obj\Debug\AntMe.Player.AntMeTeam1.dll
+C:\Users\julia\Documents\Projekte\AntMe\AntMeTeam1\obj\Debug\AntMe.Player.AntMeTeam1.pdb
