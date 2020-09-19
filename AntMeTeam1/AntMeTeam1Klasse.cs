@@ -73,13 +73,13 @@ namespace AntMe.Player.AntMeTeam1
 
     [Kaste(
         Name = "Fighter",                  // Name der Berufsgruppe
-        AngriffModifikator = 1,             // Angriffsstärke einer Ameise
+        AngriffModifikator = 2,             // Angriffsstärke einer Ameise
         DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
         EnergieModifikator = 2,             // Lebensenergie einer Ameise
         GeschwindigkeitModifikator = 0,     // Laufgeschwindigkeit einer Ameise
         LastModifikator = -1,                // Tragkraft einer Ameise
         ReichweiteModifikator = -1,          // Ausdauer einer Ameise
-        SichtweiteModifikator = 0           // Sichtweite einer Ameise
+        SichtweiteModifikator = -1           // Sichtweite einer Ameise
     )]
 
 
@@ -88,9 +88,11 @@ namespace AntMe.Player.AntMeTeam1
         #region Self-Made
 
         // private Spielobjekt ziel = null; //Speichert den Zuckerberg, damit die Ameise später den Zucker wiederfindet
+        private int time = -1;
         private Spielobjekt bau = null;
         private Ticket ticket = null;
         private String ticketTyp = null;
+        private Ameise farmeise = null;
 
         private bool traegt = false;
         private Random rnd = new Random();
@@ -104,6 +106,7 @@ namespace AntMe.Player.AntMeTeam1
         private const String zuckers = "zucker";
         private const String wanzes = "wanze";
         private const String fameises = "ameise";
+
         
         public bool hatGetragen() {
             return traegt;
@@ -114,17 +117,17 @@ namespace AntMe.Player.AntMeTeam1
             return rnd.Next(wert1, wert2);
         }
 
-        private void GeheZuZielOptimized(Spielobjekt spielobjekt)
+        private void GeheZuZielOptimized(Spielobjekt spielobjekt, int abstand = -5)
         {
             int distance = Koordinate.BestimmeEntfernung(this, spielobjekt);
             //int angle = Koordinate.BestimmeRichtung(this, spielobjekt);
             DreheZuZiel(spielobjekt);
-            GeheGeradeaus(distance);
+            GeheGeradeaus(distance - abstand);
         }
 
         private void GeheZuBauOptimized()
         {
-            if (TicketManager.Instance.bau != null)
+            if (TicketManager.Instance.bau != null && EntfernungZuBau >= 10)
             {
                 GeheZuZielOptimized(TicketManager.Instance.bau);
             }
@@ -148,16 +151,19 @@ namespace AntMe.Player.AntMeTeam1
         /// <returns>Name der Kaste zu der die geborene Ameise gehören soll</returns>
         public override string BestimmeKaste(Dictionary<string, int> anzahl)
         {
-            int sum = anzahl.Skip(1).Sum(x => x.Value);
+            int sumAnts = anzahl.Skip(1).Sum(x => x.Value);
             aSammler = anzahl["Sammler"];
             aFighter = anzahl[fighter];
 
-            return "Sammler";
 
             // Bestimme, ob ein Spotter gespawnt werden soll
-            if (sum < 10) {
+            if (anzahl["Spotter"] < 7) {
                 return "Spotter";
             }
+
+            // return fighter;
+
+            // return "Sammler";
             if (anzahl[fighter] < 20 && anzahl["Sammler"] > 10)
             {
                 return fighter;
@@ -194,6 +200,7 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Wartet()
         {
+            /// ::::: Initialisierung :::::
             //Initialisiere Bau
             if (TicketManager.Instance.bau == null)
             {
@@ -224,12 +231,37 @@ namespace AntMe.Player.AntMeTeam1
                 }
             }
 
+            /// ::::: Initialisierung - Ende :::::
+
             if (this.Kaste == "Spotter")
             {
                 DreheUmWinkel(Zufall.Zahl(-10, 10));
-                GeheGeradeaus(40);
+                GeheGeradeaus(100);
             }
 
+            // Fighter soll sich zurückziehen
+            if (this.Kaste == fighter)
+            {
+                if (Reichweite - ZurückgelegteStrecke - 10 < EntfernungZuBau)
+                {
+                    GeheZuBauOptimized();
+                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
+                    ticket = null;
+                    Denke("Reichweite " + (Reichweite - ZurückgelegteStrecke));
+                    return;
+                }
+
+                if (AktuelleEnergie < MaximaleEnergie)
+                {
+                    GeheZuBauOptimized();
+                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
+                    ticket = null;
+                    Denke("Energie " + AktuelleEnergie);
+                    return;
+                }
+            }
+
+            // Fighter sollen erkunden, wenn es nichts zu tun gibt
             if (this.Kaste == fighter && ticket == null)
             {
                 Denke("Fighter " + EntfernungZuBau);
@@ -238,8 +270,9 @@ namespace AntMe.Player.AntMeTeam1
                     return;
                 }
                 if (ticket == null) {
-                    DreheUmWinkel(Zufall.Zahl(-10, 10));
+                    DreheUmWinkel(Zufall.Zahl(-30, 30));
                     GeheGeradeaus(400);
+                    return;
                 }
             }
 
@@ -277,7 +310,7 @@ namespace AntMe.Player.AntMeTeam1
                 if (ticket == null)
                 {
                     DreheUmWinkel(ZufallsZahl(-80, 80));
-                    GeheGeradeaus();
+                    GeheGeradeaus(80);
                     ticketTyp = null;
                 }
             }
@@ -311,11 +344,60 @@ namespace AntMe.Player.AntMeTeam1
         /// </summary>
         public override void Tick()
         {
-            //Schickt erschöpfte Ameisen zurück
-            /*if (Reichweite - ZurückgelegteStrecke -20 < EntfernungZuBau)
+            // Finde tick heraus
+            if (time == -1 || time < TicketManager.Instance.GetTime())
             {
-                GeheZuBau();
-            }*/
+                time = TicketManager.Instance.GetTime();
+            }
+            else
+            {
+                time = TicketManager.Instance.IncTime();
+            }
+
+            //Findet heraus, ob das Ticket noch gebraucht wird
+            if (ticket != null && AktuelleLast == 0)
+            {
+                switch (ticketTyp)
+                {
+                    case obsts:
+                        if (!BrauchtNochTräger(ticket.Obst))
+                        {
+                            ticket = null;
+                            traegt = false;
+                            BleibStehen();
+                        }
+                        break;
+
+                    case zuckers:
+                        if (ticket.Zucker.Menge <= 0)
+                        {
+                            ticket = null;
+                            traegt = false;
+                            BleibStehen();
+                        }
+                        break;
+                    case wanzes:
+                        if (ticket.Wanze.AktuelleEnergie == 0) {
+                            TicketManager.Instance.WTot(ticket);
+                            ticket = null;
+                            BleibStehen();
+                            Denke("Sieg!!!!");
+                        }
+                        break;
+                    case fameises:
+                        if (ticket.Ameise.AktuelleEnergie == 0) {
+                            ticket = null;
+                            BleibStehen();
+                            Denke("Sieg!!!!");
+                        }
+                        break;
+                }
+            }
+
+
+            if (Kaste == "Spotter") {
+                Denke("Spotter");
+            }
 
             //Wenn die Ameise Last hat, dann soll sie zum Bau gehen
             if (AktuelleLast != 0 && TicketManager.Instance.bau != null)
@@ -325,41 +407,44 @@ namespace AntMe.Player.AntMeTeam1
             }
 
 
+            
+
             if (this.Kaste == fighter)
             {
+                // Finde feindliche Armeise
+                farmeise = TicketManager.Instance.FAmeise(this);
+
+                if (farmeise != null) {
+                    GreifeAn(farmeise);
+                    Denke("FAmeise!!  " + farmeise.AktuelleEnergie + "   " + TicketManager.Instance.CountFTicket());
+                }
+
                 // Fighter soll sich ein Ticket holen
-                if (ticket == null)
+                if (ticket == null && fameises == null)
                 {
+                    if (AktuelleEnergie < MaximaleEnergie / 2) {
+                        GeheZuBauOptimized();
+                        return;
+                    }
+
+                    // farmeise = TicketManager.Instance.FAmeise(this);
+                    // if (farmeise != null) {
+                    //     ticketTyp = fameises;
+                    //     GeheZuZielOptimized(farmeise);
+                    //     Denke("FAmeise!!  " + ticket.Ameise.AktuelleEnergie);
+                    //     return;
+                    // }
+
                     ticket = TicketManager.Instance.WGetTicket();
                     if (ticket != null) {
-                        // ziel = ticket.Wanze;
                         ticketTyp = wanzes;
                         GeheZuZielOptimized(ticket.Wanze);
-                        Denke("Wanze!!");
+                        Denke("Wanze!!  " + ticket.Wanze.AktuelleEnergie);
                         return;
                     }
                 }
             }
 
-            // Fighter soll sich zurückziehen
-            if (this.Kaste == fighter)
-            {
-                if (Reichweite - ZurückgelegteStrecke - 10 < EntfernungZuBau)
-                {
-                    GeheZuBauOptimized();
-                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
-                    ticket = null;
-                    return;
-                }
-
-                if (AktuelleEnergie < MaximaleEnergie * 2 / 3)
-                {
-                    GeheZuBauOptimized();
-                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
-                    ticket = null;
-                    return;
-                }
-            }
 
             // Ticket loswerden, wenn Arbeit erledigt ist
             if (Kaste == "Sammler" && traegt && AktuelleLast == 0) {
@@ -397,52 +482,6 @@ namespace AntMe.Player.AntMeTeam1
                 }
             }
 
-            //Findet heraus, ob das Ticket noch gebraucht wird
-            if (ticket != null && AktuelleLast == 0)
-            {
-                switch (ticketTyp)
-                {
-                    case obsts:
-                        if (!BrauchtNochTräger(ticket.Obst))
-                        {
-                            // ziel = null;
-                            ticket = null;
-                            traegt = false;
-                            BleibStehen();
-                            return;
-                        }
-                        break;
-
-                    case zuckers:
-                        if (ticket.Zucker.Menge <= 0)
-                        {
-                            // ziel = null;
-                            ticket = null;
-                            traegt = false;
-                            BleibStehen();
-                            return;
-                        }
-                        break;
-                    case wanzes:
-                        if (ticket.Wanze.AktuelleEnergie == 0) {
-                            TicketManager.Instance.WTot(ticket);
-                            // ziel = null;
-                            ticket = null;
-                            BleibStehen();
-                            return;
-                        }
-                        break;
-                    case fameises:
-                        if (ticket.Ameise.AktuelleEnergie == 0) {
-                            TicketManager.Instance.FTot(ticket);
-                            // ziel = null;
-                            ticket = null;
-                            BleibStehen();
-                            return;
-                        }
-                        break;
-                }
-            }
         }
 
         #endregion
@@ -624,6 +663,8 @@ namespace AntMe.Player.AntMeTeam1
             if (AktuelleLast == 0 && ticket == null)
             {
                 GeheWegVon(wanze);
+                Denke("Hilfe Wanze!");
+                return;
             }
 
             if (this.Kaste == fighter && ticketTyp == wanzes)
@@ -631,12 +672,8 @@ namespace AntMe.Player.AntMeTeam1
                 SprüheMarkierung(0, 150);
                 GreifeAn(wanze);
                 Denke("Angriff! " + wanze.AktuelleEnergie);
+                return;
             }
-            else
-            {
-                Denke("Hilfe Wanze!");
-            }
-
         }
 
         /// <summary>
@@ -677,10 +714,11 @@ namespace AntMe.Player.AntMeTeam1
                 GreifeAn(ameise);
                 return;
             }
-            //else
-            //{
-            //    GeheWegVon(ameise);
-            //}
+
+            if (this.Kaste == "Spotter")
+            {
+                GeheWegVon(ameise);
+            }
         }
 
         /// <summary>

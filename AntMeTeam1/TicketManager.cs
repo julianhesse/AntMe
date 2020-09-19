@@ -34,9 +34,12 @@ namespace AntMe.Spieler
 
         private bool hostile = false;
         public Spielobjekt bau = null;
+        private int time = 0;
 
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
+        private List<AntMeTeam1Klasse> army = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
         private List<Ameise> fAmeisen = new List<Ameise>();                    //feindliche Ameisen
+        private Dictionary<AntMeTeam1Klasse, Ameise> attackPlan = new Dictionary<AntMeTeam1Klasse, Ameise>();
 
         private Queue<Ticket> oTickets = new Queue<Ticket>(); //Obsttickets
         private Queue<Ticket> zTickets = new Queue<Ticket>(); //Zuckertickets
@@ -46,12 +49,51 @@ namespace AntMe.Spieler
         private List<Zucker> zListe = new List<Zucker>();
         private List<Obst> oListe = new List<Obst>();
 
+        internal int GetTime() {
+            return time;
+        }
+
+        internal int IncTime() {
+            createAttackPlan();
+            time++;
+            return time;
+        }
+
+        internal void createAttackPlan() {
+            // entferne gestorbene feindliche Ameisen
+            fTickets.RemoveAll(item => item.Ameise.AktuelleEnergie <= 0);
+            attackPlan.Clear();
+
+            foreach (var item in fTickets)
+            {
+                item.Score = score(item.Ameise);
+            }
+
+            fTickets.Sort((x, y) => y.Score.CompareTo(x.Score));
+
+            if (fTickets.Count > 1 && fTickets[0].Score < fTickets[1].Score) throw new Exception("wrong order");
+
+            // Suche für jeden Feind die nächste Armeise
+            foreach (var feind in fTickets) {
+                army.Sort((x,y) => Koordinate.BestimmeEntfernung(x, feind.Ameise).CompareTo(Koordinate.BestimmeEntfernung(feind.Ameise, y)));
+                foreach (var a in army)
+                {
+                    if (attackPlan.ContainsKey(a)) continue;
+                    attackPlan[a] = feind.Ameise;
+                }
+            }
+        }
+
         internal int CountZuckerTickets() {
             return zTickets.Count;
         }
 
         internal int CountObstTickets() {
             return oTickets.Count;
+        }
+
+        internal int CountFTicket() {
+            return fTickets.Count;
         }
 
         internal void ReportHostile()
@@ -134,6 +176,9 @@ namespace AntMe.Spieler
             if (!ameisen.Contains(ameise))
             {
                 ameisen.Add(ameise);
+                if (ameise.Kaste == "Fighter") {
+                    army.Add(ameise);
+                }
             }
         }
 
@@ -143,6 +188,7 @@ namespace AntMe.Spieler
                 ReturnTicket(ticket, ticketType, ameise.Angriff);
             }
             ameisen.Remove(ameise);
+            army.Remove(ameise);
         }
 
         internal void ReturnTicket(Ticket ticket, String ticketType, int angriff) {
@@ -166,7 +212,7 @@ namespace AntMe.Spieler
                     case fameises:
                         index = fTickets.IndexOf(ticket);
                         if (index != -1 && index < wTickets.Count) {
-                            fTickets[index].AngriffsPower -= angriff;
+                            fTickets[index].AngriffsPower -= 1;
                         }
                         break;
 
@@ -236,17 +282,50 @@ namespace AntMe.Spieler
             return null;
         }
 
-        internal void FTot(Ticket ticket) {
-            wTickets.Remove(ticket);
+        internal int score(Ameise ameise) {
+            // (b * (k - EntfernungBau)) + (e * Energie) + (a * Angriff)
+            int k = 500;
+            double b = 0.25; // Gewichtet Entfernung zum Bau
+            double e = 0.1; // Gewichtet die Energie
+            double a = 1.0; // Gewichtet
+
+            int entfernung = Koordinate.BestimmeEntfernung(ameise, this.bau);
+
+            return (int) (b * (k-entfernung) + e * ameise.AktuelleEnergie + a * ameise.Angriff);
         }
 
-        internal Ticket FGetTicket()
+        internal Ameise FAmeise(AntMeTeam1Klasse ameise)
         {
-            if (oTickets.Count > 0)
-            {
-                // return fTickets.Dequeue();
-            }
+            if (attackPlan.ContainsKey(ameise)) return attackPlan[ameise];
+
             return null;
+            // if (fTickets.Count > 0)
+            // {
+            //     Ticket ticket = null;
+
+            //     fTickets.RemoveAll(item => item.Ameise.AktuelleEnergie <= 0);
+
+            //     for (int i = 0; i < fTickets.Count; i++)
+            //     {
+            //         fTickets[i].Score = score(fTickets[i].Ameise);
+
+            //         int f = 10;
+
+            //         if (ticket == null || (ticket.Score - f * ticket.AngriffsPower < fTickets[i].Score - f * fTickets[i].AngriffsPower))
+            //         {
+            //             ticket = fTickets[i];
+            //         }
+            //     }
+
+            //     ticket.AngriffsPower += 1;
+
+            //     if (ticket.AngriffsPower != wTickets[wTickets.IndexOf(ticket)].AngriffsPower) {
+            //         throw new Exception("This is bad!");
+            //     }
+
+            //     return ticket;
+            // }
+            // return null;
         }
     }
 
@@ -257,6 +336,7 @@ namespace AntMe.Spieler
         public Ameise Ameise { get; set; }
         public Wanze Wanze { get; set; }
         public int AngriffsPower { get; set; }
+        public int Score { get; set;}
     }
 
 
