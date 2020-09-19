@@ -33,23 +33,25 @@ namespace AntMe.Spieler
         private const String fameises = "ameise";
 
         private bool hostile = false;
-        private int speed = -1;
+        public Spielobjekt bau = null;
 
         private List<AntMeTeam1Klasse> ameisen = new List<AntMeTeam1Klasse>(); //freundliche Ameisen
         private List<Ameise> fAmeisen = new List<Ameise>();                    //feindliche Ameisen
 
         private Queue<Ticket> oTickets = new Queue<Ticket>(); //Obsttickets
         private Queue<Ticket> zTickets = new Queue<Ticket>(); //Zuckertickets
-        private Queue<Ticket> fTickets = new Queue<Ticket>(); //feindliche Ameisentickets
-        private Queue<Ticket> wTickets = new Queue<Ticket>(); //Wanzentickets
+        private List<Ticket> fTickets = new List<Ticket>(); //feindliche Ameisentickets
+        private List<Ticket> wTickets = new List<Ticket>(); //Wanzentickets
 
+        private List<Zucker> zListe = new List<Zucker>();
+        private List<Obst> oListe = new List<Obst>();
 
-        internal void ReportSpeed(int speed)
-        {
-            if (this.speed < speed)
-            {
-                this.speed = speed;
-            }
+        internal int CountZuckerTickets() {
+            return zTickets.Count;
+        }
+
+        internal int CountObstTickets() {
+            return oTickets.Count;
         }
 
         internal void ReportHostile()
@@ -57,46 +59,40 @@ namespace AntMe.Spieler
             hostile = true;
         }
 
-        internal void ReportSugar(Zucker zucker)
+        internal bool ReportSugar(Zucker zucker)
         {
-            bool known = false;
-            foreach (var ticket in zTickets)
+            if (zListe.Contains(zucker)) return false;
+
+            zListe.Add(zucker);
+
+            // throw new Exception(zListe.ToString() + " " + zListe.Count);
+
+            if (zListe.Count > 10) zListe.RemoveAt(0);
+
+            int mengeTickets = zucker.Menge / 10;
+            for (int i = 0; i < mengeTickets; i++)
             {
-                if (ticket.Zucker == zucker)
-                {
-                    known = true;
-                    break;
-                }
+                zTickets.Enqueue(new Ticket() { Zucker = zucker });
             }
-            if (!known)
-            {
-                int mengeTickets = zucker.Menge / 10;
-                for (int i = 0; i < mengeTickets; i++)
-                {
-                    zTickets.Enqueue(new Ticket() { Zucker = zucker });
-                }
-            }
+
+            return true;           
         }
 
-        internal void ReportObst(Obst obst)
+        internal bool ReportObst(Obst obst)
         {
-            bool known = false;
-            foreach (var ticket in oTickets)
+            if (oListe.Contains(obst)) return false;
+
+            oListe.Add(obst);
+
+            if (oListe.Count > 10) oListe.RemoveAt(0);
+
+            int mengeTickets = obst.Menge / 10;
+            for (int i = 0; i < mengeTickets; i++)
             {
-                if (ticket.Obst == obst)
-                {
-                    known = true;
-                    break;
-                }
+                oTickets.Enqueue(new Ticket() { Obst = obst });
             }
-            if (!known)
-            {
-                int mengeTickets = 250 / 10;
-                for (int i = 0; i < mengeTickets; i++)
-                {
-                    oTickets.Enqueue(new Ticket() { Obst = obst });
-                }
-            }
+
+            return true;
         }
 
         internal void ReportFAmeise(Ameise ameise)
@@ -112,11 +108,7 @@ namespace AntMe.Spieler
             }
             if (!known)
             {
-                int mengeTickets = ameise.AktuelleEnergie / 30;
-                for (int i = 0; i < mengeTickets; i++)
-                {
-                    fTickets.Enqueue(new Ticket() { Ameise = ameise });
-                }
+                fTickets.Add(new Ticket() {Ameise = ameise, AngriffsPower = 0});
             }
         }
 
@@ -133,11 +125,7 @@ namespace AntMe.Spieler
             }
             if (!known)
             {
-                int mengeTickets = wanze.AktuelleEnergie / 30;
-                for (int i = 0; i < mengeTickets; i++)
-                {
-                    wTickets.Enqueue(new Ticket() { Wanze = wanze });
-                }
+                wTickets.Add(new Ticket() {Wanze = wanze, AngriffsPower = 0});
             }
         }
 
@@ -151,8 +139,16 @@ namespace AntMe.Spieler
 
         internal void UnregisterAmeise(AntMeTeam1Klasse ameise, Ticket ticket, String ticketType)
         {
+            if (!ameise.hatGetragen()) {
+                ReturnTicket(ticket, ticketType, ameise.Angriff);
+            }
+            ameisen.Remove(ameise);
+        }
+
+        internal void ReturnTicket(Ticket ticket, String ticketType, int angriff) {
             if (ticket != null)
             {
+                int index;
                 switch (ticketType)
                 {
                     case obsts:
@@ -162,23 +158,24 @@ namespace AntMe.Spieler
                         zTickets.Enqueue(ticket);
                         break;
                     case wanzes:
-                        wTickets.Enqueue(ticket);
+                        index = wTickets.IndexOf(ticket);
+                        if (index != -1 && index < wTickets.Count) {
+                            wTickets[index].AngriffsPower -= angriff;
+                        }
                         break;
                     case fameises:
-                        fTickets.Enqueue(ticket);
+                        index = fTickets.IndexOf(ticket);
+                        if (index != -1 && index < wTickets.Count) {
+                            fTickets[index].AngriffsPower -= angriff;
+                        }
                         break;
 
                     default:
                         break;
                 }
             }
-            ameisen.Remove(ameise);
         }
 
-        internal int GetSpeed()
-        {
-            return speed;
-        }
 
         internal bool GetHostility()
         {
@@ -203,20 +200,51 @@ namespace AntMe.Spieler
             return null;
         }
 
+        internal void WTot(Ticket ticket) {
+            wTickets.Remove(ticket);
+        }
+
         internal Ticket WGetTicket()
         {
-            if (oTickets.Count > 0)
+            if (wTickets.Count > 0)
             {
-                return wTickets.Dequeue();
+                Ticket ticket = null;
+                int shortest = int.MaxValue;
+                foreach (var t in wTickets) {
+                    if (bau == null) {
+                        throw new Exception("Bau is null");
+                    }
+                    if (t.Wanze == null) {
+                        throw new Exception("Wanze is null");
+                    }
+                    int dist = Koordinate.BestimmeEntfernung(t.Wanze, this.bau);
+
+                    if (dist < shortest) {
+                        shortest = dist;
+                        ticket = t;
+                    }
+                }
+
+                ticket.AngriffsPower += 20;
+
+                if (ticket.AngriffsPower != wTickets[wTickets.IndexOf(ticket)].AngriffsPower) {
+                    throw new Exception("This is bad!");
+                }
+
+                return ticket;
             }
             return null;
+        }
+
+        internal void FTot(Ticket ticket) {
+            wTickets.Remove(ticket);
         }
 
         internal Ticket FGetTicket()
         {
             if (oTickets.Count > 0)
             {
-                return fTickets.Dequeue();
+                // return fTickets.Dequeue();
             }
             return null;
         }
@@ -228,6 +256,7 @@ namespace AntMe.Spieler
         public Obst Obst { get; set; }
         public Ameise Ameise { get; set; }
         public Wanze Wanze { get; set; }
+        public int AngriffsPower { get; set; }
     }
 
 
