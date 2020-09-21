@@ -99,13 +99,16 @@ namespace AntMe.Player.AntMeTeam1
         private int aSammler = 0;
         private int aFighter = 0;
         private bool wegLaufen = TicketManager.Instance.GetHostility();
-        private bool trotzdemAngreifen = false;
+        // private bool trotzdemAngreifen = false;
    
         private String fighter = "Fighter";
         private const String obsts = "obst";
         private const String zuckers = "zucker";
         private const String wanzes = "wanze";
         private const String fameises = "ameise";
+
+        // private int ANGEGRIFFEN = 101;
+        // private int WANZE = 10;
 
         
         public bool hatGetragen() {
@@ -176,7 +179,7 @@ namespace AntMe.Player.AntMeTeam1
                 }
                 else
                 {
-                    if (anzahl[fighter] > 50)
+                    if (anzahl[fighter] < 50)
                     {
                         return fighter;
                     }
@@ -239,27 +242,6 @@ namespace AntMe.Player.AntMeTeam1
                 GeheGeradeaus(100);
             }
 
-            // Fighter soll sich zurückziehen
-            if (this.Kaste == fighter)
-            {
-                if (Reichweite - ZurückgelegteStrecke - 10 < EntfernungZuBau)
-                {
-                    GeheZuBauOptimized();
-                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
-                    ticket = null;
-                    Denke("Reichweite " + (Reichweite - ZurückgelegteStrecke));
-                    return;
-                }
-
-                if (AktuelleEnergie < MaximaleEnergie)
-                {
-                    GeheZuBauOptimized();
-                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
-                    ticket = null;
-                    Denke("Energie " + AktuelleEnergie);
-                    return;
-                }
-            }
 
             // Fighter sollen erkunden, wenn es nichts zu tun gibt
             if (this.Kaste == fighter && ticket == null)
@@ -407,20 +389,43 @@ namespace AntMe.Player.AntMeTeam1
             }
 
 
-            
 
+            // Fighter soll sich zurückziehen
             if (this.Kaste == fighter)
             {
-                // Finde feindliche Armeise
-                farmeise = TicketManager.Instance.FAmeise(this);
-
-                if (farmeise != null) {
-                    GreifeAn(farmeise);
-                    Denke("FAmeise!!  " + farmeise.AktuelleEnergie + "   " + TicketManager.Instance.CountFTicket());
+                if (EntfernungZuBau > 400)
+                {
+                    GeheZuBauOptimized();
+                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
+                    ticket = null;
+                    Denke("Reichweite " + (Reichweite - ZurückgelegteStrecke));
+                    return;
                 }
 
+                if (AktuelleEnergie < MaximaleEnergie && Ziel == null)
+                {
+                    GeheZuBauOptimized();
+                    TicketManager.Instance.ReturnTicket(ticket, ticketTyp, this.Angriff);
+                    ticket = null;
+                    Denke("Energie " + AktuelleEnergie);
+                    return;
+                }
+            }
+            
+            // Mögliche Gegner finden
+            if (this.Kaste == fighter)
+            {
+                // // Finde feindliche Armeise
+                // ticket = TicketManager.Instance.FAmeise(this);
+
+                // if (ticket != null) {
+                //     ticketTyp = fameises;
+                //     GreifeAn(ticket.Ameise);
+                //     Denke("FAmeise!!  " + ticket.Ameise.AktuelleEnergie + "   " + TicketManager.Instance.CountFTicket());
+                // }
+
                 // Fighter soll sich ein Ticket holen
-                if (ticket == null && fameises == null)
+                if (ticket == null && farmeise == null)
                 {
                     if (AktuelleEnergie < MaximaleEnergie / 2) {
                         GeheZuBauOptimized();
@@ -635,15 +640,10 @@ namespace AntMe.Player.AntMeTeam1
         {
             if(ameise.AktuelleLast != 0)
             {
-                trotzdemAngreifen = true;
                 SprüheMarkierung(100, 200);
             }
-            else
-            {
-                trotzdemAngreifen = false;
-            }
 
-            if (!wegLaufen || trotzdemAngreifen)
+            if (Kaste == "Fighter")
             {
                 GreifeAn(ameise);
             }
@@ -689,14 +689,6 @@ namespace AntMe.Player.AntMeTeam1
 
             TicketManager.Instance.ReportHostile();
 
-            if(ameise.AktuelleLast != 0)
-            {
-                trotzdemAngreifen = true;
-            }
-            else
-            {
-                trotzdemAngreifen = false;
-            }
 
             //Wenn Sammler angegriffen werden, dann sollen sie ihr Ticket verwerfen
             if (this.Kaste == "Sammler" && AktuelleLast == 0)
@@ -717,7 +709,7 @@ namespace AntMe.Player.AntMeTeam1
 
             if (this.Kaste == "Spotter")
             {
-                GeheWegVon(ameise);
+                GeheZuBauOptimized();
             }
         }
 

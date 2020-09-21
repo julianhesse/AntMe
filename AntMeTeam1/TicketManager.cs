@@ -61,27 +61,27 @@ namespace AntMe.Spieler
 
         internal void createAttackPlan() {
             // entferne gestorbene feindliche Ameisen
-            fTickets.RemoveAll(item => item.Ameise.AktuelleEnergie <= 0);
-            attackPlan.Clear();
+            // fTickets.RemoveAll(item => item.Ameise.AktuelleEnergie <= 0);
+            // attackPlan.Clear();
 
-            foreach (var item in fTickets)
-            {
-                item.Score = score(item.Ameise);
-            }
+            // foreach (var item in fTickets)
+            // {
+            //     item.Score = score(item.Ameise);
+            // }
 
-            fTickets.Sort((x, y) => y.Score.CompareTo(x.Score));
+            // fTickets.Sort((x, y) => y.Score.CompareTo(x.Score));
 
-            if (fTickets.Count > 1 && fTickets[0].Score < fTickets[1].Score) throw new Exception("wrong order");
+            // if (fTickets.Count > 1 && fTickets[0].Score < fTickets[1].Score) throw new Exception("wrong order");
 
-            // Suche für jeden Feind die nächste Armeise
-            foreach (var feind in fTickets) {
-                army.Sort((x,y) => Koordinate.BestimmeEntfernung(x, feind.Ameise).CompareTo(Koordinate.BestimmeEntfernung(feind.Ameise, y)));
-                foreach (var a in army)
-                {
-                    if (attackPlan.ContainsKey(a)) continue;
-                    attackPlan[a] = feind.Ameise;
-                }
-            }
+            // // Suche für jeden Feind die nächste Armeise
+            // foreach (var feind in fTickets) {
+            //     army.Sort((x,y) => Koordinate.BestimmeEntfernung(x, feind.Ameise).CompareTo(Koordinate.BestimmeEntfernung(feind.Ameise, y)));
+            //     foreach (var a in army)
+            //     {
+            //         if (attackPlan.ContainsKey(a)) continue;
+            //         attackPlan[a] = feind.Ameise;
+            //     }
+            // }
         }
 
         internal int CountZuckerTickets() {
@@ -294,38 +294,51 @@ namespace AntMe.Spieler
             return (int) (b * (k-entfernung) + e * ameise.AktuelleEnergie + a * ameise.Angriff);
         }
 
-        internal Ameise FAmeise(AntMeTeam1Klasse ameise)
+        internal Ticket FAmeise(AntMeTeam1Klasse ameise)
         {
-            if (attackPlan.ContainsKey(ameise)) return attackPlan[ameise];
+            // if (attackPlan.ContainsKey(ameise)) return attackPlan[ameise];
 
-            return null;
-            // if (fTickets.Count > 0)
-            // {
-            //     Ticket ticket = null;
-
-            //     fTickets.RemoveAll(item => item.Ameise.AktuelleEnergie <= 0);
-
-            //     for (int i = 0; i < fTickets.Count; i++)
-            //     {
-            //         fTickets[i].Score = score(fTickets[i].Ameise);
-
-            //         int f = 10;
-
-            //         if (ticket == null || (ticket.Score - f * ticket.AngriffsPower < fTickets[i].Score - f * fTickets[i].AngriffsPower))
-            //         {
-            //             ticket = fTickets[i];
-            //         }
-            //     }
-
-            //     ticket.AngriffsPower += 1;
-
-            //     if (ticket.AngriffsPower != wTickets[wTickets.IndexOf(ticket)].AngriffsPower) {
-            //         throw new Exception("This is bad!");
-            //     }
-
-            //     return ticket;
-            // }
             // return null;
+            if (fTickets.Count > 0)
+            {
+                Ticket ticket = null;
+
+                fTickets.RemoveAll(item => item.Ameise == null);
+                fTickets.RemoveAll(item => item.Ameise.AktuelleEnergie <= 0);
+
+                for (int i = 0; i < fTickets.Count; i++)
+                {
+                    // fTickets[i].Score = score(fTickets[i].Ameise);
+
+                    // int f = 10;
+
+                    // if (ticket == null || (ticket.Score - f * ticket.AngriffsPower < fTickets[i].Score - f * fTickets[i].AngriffsPower))
+                    // {
+                    //     ticket = fTickets[i];
+                    // }
+                    if (fTickets[i].Ameise == null) throw new Exception("Ticket currupted");
+
+                    fTickets[i].Score = Koordinate.BestimmeEntfernung(fTickets[i].Ameise, bau);
+
+                    if (ticket == null) {
+                        ticket = fTickets[i];
+                        continue;
+                    }
+
+                    if (ticket == null || fTickets[i].Score < ticket.Score) {
+                        ticket = fTickets[i];
+                    }
+                }
+
+                ticket.AngriffsPower += 1;
+
+                // if (ticket.AngriffsPower != fTickets[fTickets.IndexOf(ticket)].AngriffsPower) {
+                //     throw new Exception("This is bad!");
+                // }
+
+                return ticket;
+            }
+            return null;
         }
     }
 
