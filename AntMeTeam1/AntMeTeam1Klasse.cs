@@ -164,7 +164,7 @@ namespace AntMe.Player.AntMeTeam1
                 return "Spotter";
             }
 
-            return fighter;
+            // return fighter;
 
             // return "Sammler";
             if (anzahl[fighter] < 20 && anzahl["Sammler"] > 10)
