@@ -73,12 +73,12 @@ namespace AntMe.Player.AntMeTeam1
 
     [Kaste(
         Name = "Fighter",                  // Name der Berufsgruppe
-        AngriffModifikator = 2,             // Angriffsstärke einer Ameise
-        DrehgeschwindigkeitModifikator = -1, // Drehgeschwindigkeit einer Ameise
-        EnergieModifikator = 2,             // Lebensenergie einer Ameise
+        AngriffModifikator = 1,             // Angriffsstärke einer Ameise
+        DrehgeschwindigkeitModifikator = 0, // Drehgeschwindigkeit einer Ameise
+        EnergieModifikator = 1,             // Lebensenergie einer Ameise
         GeschwindigkeitModifikator = 0,     // Laufgeschwindigkeit einer Ameise
         LastModifikator = -1,                // Tragkraft einer Ameise
-        ReichweiteModifikator = -1,          // Ausdauer einer Ameise
+        ReichweiteModifikator = 0,          // Ausdauer einer Ameise
         SichtweiteModifikator = -1           // Sichtweite einer Ameise
     )]
 
@@ -120,11 +120,11 @@ namespace AntMe.Player.AntMeTeam1
             return rnd.Next(wert1, wert2);
         }
 
-        private void GeheZuZielOptimized(Spielobjekt spielobjekt, int abstand = -5)
+        private void GeheZuZielOptimized(Spielobjekt spielobjekt, int abstand = 0, bool drehe = true)
         {
             int distance = Koordinate.BestimmeEntfernung(this, spielobjekt);
             //int angle = Koordinate.BestimmeRichtung(this, spielobjekt);
-            DreheZuZiel(spielobjekt);
+            if (drehe) DreheZuZiel(spielobjekt);
             GeheGeradeaus(distance - abstand);
         }
 
@@ -164,7 +164,7 @@ namespace AntMe.Player.AntMeTeam1
                 return "Spotter";
             }
 
-            // return fighter;
+            return fighter;
 
             // return "Sammler";
             if (anzahl[fighter] < 20 && anzahl["Sammler"] > 10)
@@ -240,18 +240,20 @@ namespace AntMe.Player.AntMeTeam1
             {
                 DreheUmWinkel(Zufall.Zahl(-10, 10));
                 GeheGeradeaus(100);
+                return;
             }
 
 
             // Fighter sollen erkunden, wenn es nichts zu tun gibt
             if (this.Kaste == fighter && ticket == null)
             {
-                Denke("Fighter " + EntfernungZuBau);
                 if (EntfernungZuBau > 350) {
+                    Denke("Fighter " + EntfernungZuBau);
                     GeheZuBauOptimized();
                     return;
                 }
-                if (ticket == null) {
+                else {
+                    Denke("Fighter Erkunde!");
                     DreheUmWinkel(Zufall.Zahl(-30, 30));
                     GeheGeradeaus(400);
                     return;
@@ -294,8 +296,20 @@ namespace AntMe.Player.AntMeTeam1
                     DreheUmWinkel(ZufallsZahl(-80, 80));
                     GeheGeradeaus(80);
                     ticketTyp = null;
+                    return;
                 }
             }
+
+            if (ticket != null) {
+                switch(ticketTyp) {
+                    case wanzes:
+                        Denke("Warte Wanze " + ticket.Wanze.AktuelleEnergie);
+                        GreifeAn(ticket.Wanze);
+                        return;
+                }
+            }
+
+            Denke("Ich warte und mache nichts! Ticket: " + ticketTyp );
         }
 
         /// <summary>
@@ -315,6 +329,7 @@ namespace AntMe.Player.AntMeTeam1
         /// <param name="todesart">Art des Todes</param>
         public override void IstGestorben(Todesart todesart)
         {
+            // TODO: register if a lot of ants died from retrieving the sugar, in order to drop tickets
             TicketManager.Instance.UnregisterAmeise(this, ticket, ticketTyp);
         }
 
@@ -346,7 +361,12 @@ namespace AntMe.Player.AntMeTeam1
                         {
                             ticket = null;
                             traegt = false;
+                            Denke("Obst weg");
                             BleibStehen();
+                        }
+                        else {
+                            Denke("Obst bewegt!");
+                            GeheZuZielOptimized(ticket.Obst);
                         }
                         break;
 
@@ -355,6 +375,7 @@ namespace AntMe.Player.AntMeTeam1
                         {
                             ticket = null;
                             traegt = false;
+                            Denke("Zucker weg");
                             BleibStehen();
                         }
                         break;
@@ -385,6 +406,7 @@ namespace AntMe.Player.AntMeTeam1
             if (AktuelleLast != 0 && TicketManager.Instance.bau != null)
             {
                 GeheZuBauOptimized();
+                Denke("Carry Home!");
                 return;
             }
 
@@ -429,6 +451,7 @@ namespace AntMe.Player.AntMeTeam1
                 {
                     if (AktuelleEnergie < MaximaleEnergie / 2) {
                         GeheZuBauOptimized();
+                        Denke("Fighter Refill");
                         return;
                     }
 
@@ -443,6 +466,7 @@ namespace AntMe.Player.AntMeTeam1
                     ticket = TicketManager.Instance.WGetTicket();
                     if (ticket != null) {
                         ticketTyp = wanzes;
+                        BleibStehen();
                         GeheZuZielOptimized(ticket.Wanze);
                         Denke("Wanze!!  " + ticket.Wanze.AktuelleEnergie);
                         return;
@@ -465,7 +489,6 @@ namespace AntMe.Player.AntMeTeam1
 
                 if (ticket != null)
                 {
-                    // ziel = ticket.Obst;
                     BleibStehen();
                     ticketTyp = obsts;
                     GeheZuZielOptimized(ticket.Obst);
@@ -478,10 +501,11 @@ namespace AntMe.Player.AntMeTeam1
 
                 if (ticket != null)
                 {
-                    // ziel = ticket.Zucker;
                     BleibStehen();
                     ticketTyp = zuckers;
-                    GeheZuZielOptimized(ticket.Zucker);
+                    // DreheUmWinkel(Koordinate.BestimmeRichtung(this, ticket.Zucker) + 0);
+                    DreheZuZiel(ticket.Zucker);
+                    GeheZuZielOptimized(ticket.Zucker, drehe: false);
                     Denke("Zucker " + TicketManager.Instance.CountZuckerTickets());
                     return;
                 }
@@ -545,7 +569,7 @@ namespace AntMe.Player.AntMeTeam1
             {
                 //SprüheMarkierung(1000, 300);
                 Nimm(obst);
-                GeheZuBau();
+                GeheZuBauOptimized();
                 traegt = true;
                 Denke("" + obst.Menge);
             }
@@ -563,7 +587,7 @@ namespace AntMe.Player.AntMeTeam1
             if (ticketTyp == zuckers)
             {
                 Nimm(zucker);
-                GeheZuBau();
+                GeheZuBauOptimized();
                 traegt = true;
             }
         }
@@ -599,7 +623,7 @@ namespace AntMe.Player.AntMeTeam1
             //}
             if (this.Ziel == null && this.Kaste == fighter && (!wegLaufen || markierung.Information == 100))
             {
-                GeheZuZiel(markierung);
+                GeheZuZielOptimized(markierung);
             }
         }
 
@@ -697,12 +721,14 @@ namespace AntMe.Player.AntMeTeam1
                 ticket = null;
                 // ziel = null;
                 ticketTyp = null;
+                Denke("Tactical Retreat!");
                 GeheWegVon(ameise);
                 return;
             }
 
             if (this.Kaste == fighter)
             {
+                Denke("Angriff!");
                 GreifeAn(ameise);
                 return;
             }
@@ -726,7 +752,14 @@ namespace AntMe.Player.AntMeTeam1
 
             if (this.Kaste == fighter && ticketTyp == wanzes)
             {
-                GreifeAn(wanze);
+                if (AnzahlAmeisenDerSelbenKasteInSichtweite > 0) {
+                    Denke("Tactical Retreat!");
+                    GeheWegVon(wanze);
+                }
+                else {
+                    Denke("Angriff!");
+                    GreifeAn(wanze);
+                }
             }
             //else
             //{
